@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Main layout styles Starts */
+.layout{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-layout{
+    flex: 1;
+}
+/* Main layout styles Ends */
