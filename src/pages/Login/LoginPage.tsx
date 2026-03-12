@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
-import type { LoginForm } from '../../types/login.types';
+import React, { useEffect, useState } from 'react'
+import type { ILoginForm } from '../../types/login.types';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useUnit } from '../../context/UnitContext';
 
 const LoginPage = () => {
 
+    const {clearUnit} = useUnit();
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const [formdata,setFormData] = useState<LoginForm>({
+    const [formdata,setFormData] = useState<ILoginForm>({
         username:"",
         password:""
     });
@@ -49,7 +51,8 @@ const LoginPage = () => {
         try {
             const res  = await login(formdata);
             if(res.success){
-                navigate('/module');
+                navigate('/unitsubscription');
+                //navigate('/module');
                  
             }
             else {
@@ -71,8 +74,12 @@ const LoginPage = () => {
         }
     }
 
+    useEffect(()=>{
+        clearUnit();
+    },[]);
+
     return (
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen px-2">
             
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-8">
                 

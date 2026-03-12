@@ -1,16 +1,31 @@
-import { createContext, useContext, useState } from "react";
-import type { AuthContextType, LoginForm } from "../types/login.types";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { IAuthContextType, ILoginForm } from "../types/login.types";
 import { loginService } from "../services/auth.service";
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<IAuthContextType | null>(null);
 
 export const AuthProvider = ({ children }:{ children: React.ReactNode }) => {
     
-    const [token,setToken] = useState(null);
+    const [token,setToken] = useState<string | null>(localStorage.getItem("token"));
 
-    const login = async (data:LoginForm) => {
+    // Restore token on app loads 
+    useEffect(()=>{
+        const storedToken = localStorage.getItem('token');
+        if(storedToken){
+            setToken(storedToken);
+        }
+    },[]);
+
+    const login = async (data:ILoginForm) => {
         const response = await loginService(data);
         console.log("Login response", response);
+        // var response = {
+        //         "id": "2",
+        //         "username": "dhananjay",
+        //         "password": "pass123",
+        //         "token": "xyz789token",
+        //         "success": true
+        //     }
         if(response.success && response.token){
             setToken(response.token);
             localStorage.setItem('token', response.token);
@@ -21,6 +36,7 @@ export const AuthProvider = ({ children }:{ children: React.ReactNode }) => {
     const logout = () => {
         setToken(null);
         localStorage.removeItem('token');
+        localStorage.removeItem("selectedUnit");
     }
 
     return (

@@ -1,13 +1,12 @@
-import { useParams } from "react-router-dom";
 import Registration from "../../components/Registration";
+import GetPatinetDetails from "../../components/GetPatientDetails";
 
 const RegistrationPage = () => {
-
-    const { action } = useParams();
 
     return (
         <div>
             <Registration />
+            <GetPatinetDetails/>  
         </div>
     )
 }

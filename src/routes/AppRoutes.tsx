@@ -6,6 +6,8 @@ import ModulePage from "../pages/Module/ModulePage"
 import RegistrationPage from "../pages/Registration/RegistrationPage"
 import ProtectedRoutes from "./ProtectedRoute"
 import NotFound from "../pages/NotFound/NotFound"
+import GetDetailsPage from "../pages/Registration/GetDetailsPage"
+import UnitSubscriptionPage from "../pages/Module/UnitSubscriptionPage"
 
 const AppRoutes = () => {
 
@@ -21,6 +23,13 @@ const AppRoutes = () => {
                     </ProtectedRoutes>
                 } />
 
+                <Route path="/unitsubscription" element={
+                    <ProtectedRoutes>
+                        <UnitSubscriptionPage/>
+                    </ProtectedRoutes>
+                }
+                />
+
                 <Route element={<MainLayout />}>
 
                     <Route path="/dashboard" element={
@@ -29,9 +38,15 @@ const AppRoutes = () => {
                         </ProtectedRoutes>
                     } />
 
-                    <Route path="/registration/:action" element={
+                    <Route path="/registration" element={
                         <ProtectedRoutes>
                             <RegistrationPage/>
+                        </ProtectedRoutes>
+                    } />
+
+                    <Route path="/getdetails" element={
+                        <ProtectedRoutes>
+                           <GetDetailsPage/>
                         </ProtectedRoutes>
                     } />
 

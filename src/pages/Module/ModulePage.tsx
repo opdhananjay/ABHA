@@ -7,18 +7,18 @@ const ModulePage = () => {
     const [selectedModule,setSelectedModule] = useState<string | null>(null);
 
     const handleRedirection = (moduleName:string) => {
-        if(moduleName === "Registration"){
-            navigate('/registration/register');
+        if(moduleName === "registration"){
+            navigate('/registration');
         }
-        else if(moduleName === "Registration_Verify"){
-            navigate('/registration/verify');
+        else if(moduleName === "getdetails"){
+            navigate('/getdetails');
         }
     }
 
     return (
 
         <div className="bg-gray-100 flex flex-col md:flex-row gap-4 items-center justify-center min-h-screen w-full">
-
+            
         {
             !selectedModule && (
                 <>
@@ -45,7 +45,7 @@ const ModulePage = () => {
                             <span className="text-4xl mb-2">📊</span>
 
                             <h2 className="font-semibold text-blue-700">
-                            M2
+                            Sharing Data
                             </h2>
 
                         </div>
@@ -59,7 +59,7 @@ const ModulePage = () => {
                             <span className="text-4xl mb-2">⚙️</span>
 
                             <h2 className="font-semibold text-gray-700">
-                            M3
+                            Retriving Data
                             </h2>
 
                         </div>
@@ -80,26 +80,26 @@ const ModulePage = () => {
 
                     {/* Register */}
                     <div className="flex flex-col items-center justify-center border w-full max-w-xs md:w-48 h-32 rounded-lg shadow-md cursor-pointer bg-white hover:shadow-lg hover:border-blue-600 transition" onClick={()=>{
-                        handleRedirection('Registration');
+                        handleRedirection('registration');
                     }}>
 
                         <span className="text-3xl mb-2">📝</span>
 
                         <p className="font-medium text-gray-700">
-                            Register
+                            New
                         </p>
 
                     </div>
 
                     {/* Verify */}
                     <div className="flex flex-col items-center justify-center border w-full max-w-xs md:w-48 h-32 rounded-lg shadow-md cursor-pointer bg-white hover:shadow-lg hover:border-green-600 transition" onClick={()=>{
-                        handleRedirection("Registration_Verify");
+                        handleRedirection("getdetails");
                     }}>
 
                         <span className="text-3xl mb-2">✔️</span>
 
                         <p className="font-medium text-gray-700">
-                            Verify
+                            Get Details
                         </p>
 
                     </div>

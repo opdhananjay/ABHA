@@ -1,15 +1,15 @@
-export interface LoginForm {
+export interface ILoginForm {
     username:string;
     password:string
 }
 
-export interface AuthContextType{
+export interface IAuthContextType{
     token:string | null;
-    login:(data:LoginForm) => any;
+    login:(data:ILoginForm) => any;
     logout:() => void;
 }
 
-export interface LoginResponse{
+export interface ILoginResponse{
     token?:string;
     message?:string;
     success:boolean;
