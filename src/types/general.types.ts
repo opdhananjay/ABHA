@@ -1,12 +1,13 @@
 export interface IModalProps{
     isOpen:boolean;
+    showCloseBtn:boolean | true;
     onClose:()=>void;
     title?:string;
     children:React.ReactNode;
     width?:string;
     height?:string;
 }
-
+  
 export interface IUnit{
     id:string;
     name:string;

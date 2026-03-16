@@ -6,7 +6,7 @@ const RegistrationPage = () => {
     return (
         <div>
             <Registration />
-            <GetPatinetDetails/>  
+            {/* <GetPatinetDetails/>   */}
         </div>
     )
 }

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUnit } from "../context/UnitContext";
-import { useEffect } from "react";
+import { LogOut } from "lucide-react";
 
 const Header = () => {
 
@@ -19,12 +19,6 @@ const Header = () => {
     navigate("/unitsubscription");
   };
 
-  useEffect(()=>{
-    if(!selectedUnitObject?.name){
-       handleUnitChange();
-    }
-  },[]);
-
   return (
     <header className="w-full min-h-[64px] bg-white flex items-center justify-between px-3 sm:px-4 md:px-8 py-2 shadow-md">
 
@@ -32,16 +26,21 @@ const Header = () => {
       <div className="flex items-center gap-2 sm:gap-3">
 
         {/* Unit Selector */}
-        <button
-          onClick={handleUnitChange}
-          className="flex items-center gap-1 sm:gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1.5 rounded-md transition max-w-[140px] sm:max-w-none truncate"
-        >
-          <span className="font-medium truncate">
-            {selectedUnitObject?.name || "Select Unit"}
-          </span>
+        {
+          selectedUnitObject?.name && (
+            <button
+              onClick={handleUnitChange}
+              className="flex items-center gap-1 sm:gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1.5 rounded-md transition max-w-[140px] sm:max-w-none truncate"
+            >
+              <span className="font-medium truncate">
+                {selectedUnitObject?.name || "Select Unit"}
+              </span>
 
-          <span className="text-[10px] sm:text-xs">▼</span>
-        </button>
+              <span className="text-[10px] sm:text-xs">▼</span>
+            </button>
+          )
+        }
+        
 
         {/* Logo */}
         <div className="flex items-center gap-1 sm:gap-2">
@@ -61,9 +60,10 @@ const Header = () => {
       {/* Logout */}
       <button
         onClick={handleLogout}
-        className="bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm md:text-base font-medium py-1 px-3 sm:px-4 rounded-md transition hover:cursor-pointer"
+        className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm md:text-base font-medium py-1 px-3 sm:px-4 rounded-md transition cursor-pointer"
       >
         Logout
+        <LogOut size={16} />
       </button>
 
     </header>

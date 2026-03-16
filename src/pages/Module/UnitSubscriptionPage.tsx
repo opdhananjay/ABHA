@@ -5,16 +5,18 @@ import { useState } from "react";
 const UnitSubscriptionPage = () => {
 
     const {units,selectedUnit,setSelectedUnit} = useUnit();
+    const [tempUnit, setTempUnit] = useState(selectedUnit || "");
     const [error,setError] = useState('');
     const navigate = useNavigate();
 
     const handleCountinue = () => {
         
-        if(!selectedUnit){
-            setError("Please Select Unit");
+        if(!tempUnit){
+            setError("Kindly Select Unit");
             return;
         }
 
+        setSelectedUnit(tempUnit);
         setError("");
         navigate('/module');
     }
@@ -33,8 +35,8 @@ const UnitSubscriptionPage = () => {
 
                     <div className="relative">
 
-                        <select value={selectedUnit || ""} onChange={(e)=>{
-                            setSelectedUnit(e.target.value)
+                        <select value={tempUnit || ""} onChange={(e)=>{
+                            setTempUnit(e.target.value)
                         }}
                             className="w-full border rounded-md px-4 py-3 pr-10
                                     appearance-none bg-white

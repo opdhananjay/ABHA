@@ -17,20 +17,20 @@ const AppRoutes = () => {
 
                 <Route path="/" element={<LoginPage />} />
 
-                <Route path="/module" element={
-                    <ProtectedRoutes>
-                        <ModulePage/>
-                    </ProtectedRoutes>
-                } />
-
-                <Route path="/unitsubscription" element={
-                    <ProtectedRoutes>
-                        <UnitSubscriptionPage/>
-                    </ProtectedRoutes>
-                }
-                />
-
                 <Route element={<MainLayout />}>
+
+                    <Route path="/module" element={
+                        <ProtectedRoutes>
+                            <ModulePage/>
+                        </ProtectedRoutes>
+                    } />
+
+                    <Route path="/unitsubscription" element={
+                        <ProtectedRoutes>
+                            <UnitSubscriptionPage/>
+                        </ProtectedRoutes>
+                    }
+                    />
 
                     <Route path="/dashboard" element={
                         <ProtectedRoutes>

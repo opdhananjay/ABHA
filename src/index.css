@@ -11,3 +11,8 @@
     flex: 1;
 }
 /* Main layout styles Ends */
+
+
+.blur-background {
+  filter: blur(2px);
+}
