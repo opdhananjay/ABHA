@@ -15,7 +15,7 @@ const Modal = ({
 
   return (
 
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2">
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]"></div>
@@ -27,9 +27,9 @@ const Modal = ({
       >
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center justify-between border-b px-4 py-3 ml-2 mr-2">
 
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-base md:text-lg font-semibold text-gray-600 tracking-tight">
             {title}
           </h2>
 

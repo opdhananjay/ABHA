@@ -2,11 +2,37 @@ import { useState } from "react";
 import Modal from "./shared/Modal";
 import OTPVerification from "./OTPVerification";
 import UserInfoSection from "./shared/UserInfoSection";
+import AadharDetails from "./AadharDetails";
+import CreateAddress from "./CreateAddress";
+
+type ModalType = "NONE" | "OTP_VERIFICATION" | "ABHA_ADDRESS";  // opening Modal types
 
 const Registration = () => {
 
-    const [isModalOpen,setIsModalOpen] = useState<boolean>(false);
+    const [activeModal,setActiveModal] = useState<ModalType>("NONE");
 
+
+    // Create Abha Address Region Stats 
+    
+    const [suggestedAddresses, setSuggestedAddresses] = useState<string[]>([]);
+    const [selectedAddress,setSelectedAddress] = useState("");  
+    const [customAddress,setCustomAddress] = useState("");
+    const [isFetchingAddresses,setIsFetchingAddresses] = useState(false);
+
+    const handleCreateAbha = async () => {
+        
+    }
+    
+    // End of Region
+
+
+    // OTT Verification Region Stats
+    
+    const handleNotifyResponseOTPVerification = (response?:any) => {
+        console.log("OTP Verification Result", response);
+    };  
+
+    // End of Region
 
     return (
         <>
@@ -28,15 +54,41 @@ const Registration = () => {
 
                     <form className="space-y-4">
                         
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                            <label className="md:w-40 text-sm font-medium text-gray-700">
-                                Full Name
-                            </label>
-                            <input type="text"
-                             className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                        focus:ring-2 focus:ring-green-500 outline-none"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                                <label className="md:w-40 text-sm font-medium text-gray-700">
+                                    First Name
+                                </label>
+                                <input type="text"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                            focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+
+                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                                <label className="md:w-40 text-sm font-medium text-gray-700">
+                                    Middle Name
+                                </label>
+                                <input type="text"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                            focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+
+                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                                <label className="md:w-40 text-sm font-medium text-gray-700">
+                                    Last Name
+                                </label>
+                                <input type="text"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                            focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+
                         </div>
+
+                        
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -89,12 +141,20 @@ const Registration = () => {
                                         Other
                                     </label>
 
-
-                                
-
                                 </div>
 
                             </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                            <label className="md:w-40 text-sm font-medium text-gray-700">
+                               Aadhar No.
+                            </label>
+                            <input type="text"
+                             className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                        focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                            <button type="button" onClick={() => setActiveModal("OTP_VERIFICATION")} className="border border-gray-300 rounded-md px-4 py-2 cursor-pointer bg-green-600 text-white">Verify</button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,27 +185,84 @@ const Registration = () => {
 
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            
+                            <div className="flex flex-col md:flex-row md:items-center gap-2     md:gap-4">
+                                <label className="md:w-40 text-sm font-medium text-gray-700">
+                                 UHID
+                                </label>
 
+                                <input
+                                type="text"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                            focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
 
-                        
+                            <div className="flex flex-col md:flex-row md:items-center gap-2     md:gap-4">
+                                <label className="md:w-40 text-sm font-medium text-gray-700">
+                                 ABHA ID
+                                </label>
 
+                                <input
+                                type="text"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                                            focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                                <button onClick={() => setActiveModal("ABHA_ADDRESS")}  type="button" className="border border-gray-300 rounded-md px-4 py-2 cursor-pointer bg-gray-300 text-sm">Create Abha</button>
+                            </div>
 
-
-                       
-
-
-
-                        
-                        
-
+                        </div>
 
                     </form>
 
                     </div>
 
+                    {/* Aadhar Details */}
+                    <div>
+                        <AadharDetails/>
+                    </div>
+
                 </div>
 
             </div>
+
+           <Modal
+                isOpen={activeModal === "OTP_VERIFICATION"}
+                onClose={()=>setActiveModal('NONE')}
+                showCloseBtn={true}
+                title="Aadhar Verification"
+                width="max-w-lg"
+                height="auto"
+            >
+              <OTPVerification
+                    onClose={() => setActiveModal('NONE')}
+                    mode="mobile"
+                    mobileNumber="8104773699"
+                    onSuccess={handleNotifyResponseOTPVerification}
+               />
+           </Modal>
+
+           <Modal isOpen={activeModal === "ABHA_ADDRESS"}
+                onClose={()=>setActiveModal('NONE')}
+                showCloseBtn={true}
+                title="Create ABHA Address"
+                width="max-w-lg"
+                height="auto"
+           >
+               <CreateAddress 
+                    suggestedAddresses={suggestedAddresses}
+                    selectedAddress={selectedAddress}
+                    onSelectAddress={setSelectedAddress}
+                    customAddress={customAddress}
+                    onCustomAddressChange={setCustomAddress}
+                    onSubmit={handleCreateAbha}
+                    loading={isFetchingAddresses}
+               />
+           </Modal>
+
+
+
         </>
         
     )

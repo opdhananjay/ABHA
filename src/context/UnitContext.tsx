@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getUnitsService } from "../services/auth.service";
 import type { IUnit, IUnitContextType } from "../types/general.types";
+import { useAuth } from "./AuthContext";
 
 const UnitContext = createContext<IUnitContextType | null>(null);
 
 export const UnitProvider = ({ children }: { children: React.ReactNode }) => {
 
+  const { token } = useAuth()
   const [units, setUnits] = useState<IUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string>(() => {
     return localStorage.getItem("selectedUnit") || "";
@@ -23,10 +25,12 @@ export const UnitProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
 
+    if(!token) return;
+
     const fetchUnits = async () => {
       try {
         const response = await getUnitsService();
-        setUnits(response);
+        setUnits(response.units);
       } catch (err) {
         console.log("Unit Service Error", err);
       }
@@ -34,7 +38,7 @@ export const UnitProvider = ({ children }: { children: React.ReactNode }) => {
 
     fetchUnits();
 
-  }, []);
+  }, [token]);
 
   return (
     <UnitContext.Provider value={{ units, selectedUnit, setSelectedUnit:updateSelectedUnit,clearUnit }}>

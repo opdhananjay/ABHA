@@ -20,14 +20,14 @@ export const AuthProvider = ({ children }:{ children: React.ReactNode }) => {
         const response = await loginService(data);
         console.log("Login response", response);
         // var response = {
-        //         "id": "2",
-        //         "username": "dhananjay",
-        //         "password": "pass123",
-        //         "token": "xyz789token",
-        //         "success": true
-        //     }
-        if(response.success && response.token){
-            setToken(response.token);
+        //     "id": "2",
+        //     "username": "dhananjay",
+        //     "password": "pass123",
+        //     "token": "xyz789token",
+        //     "success": true
+        // }
+        if(response.success && response.statusCode == 200){
+            setToken(response.data[3]);
             localStorage.setItem('token', response.token);
         }
         return response;

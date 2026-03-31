@@ -50,7 +50,7 @@ const LoginPage = () => {
 
         try {
             const res  = await login(formdata);
-            if(res.success){
+            if(res.success && res.statusCode == 200){
                 navigate('/unitsubscription');
                 //navigate('/module');
                  
