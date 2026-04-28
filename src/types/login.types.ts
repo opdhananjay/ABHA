@@ -7,6 +7,7 @@ export interface IAuthContextType{
     token:string | null;
     login:(data:ILoginForm) => any;
     logout:() => void;
+    user:string | null;
 }
 
 export interface ILoginResponse{

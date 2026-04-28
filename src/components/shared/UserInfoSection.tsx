@@ -25,4 +25,4 @@ const UserInfoSection = () => {
     
 }
 
-export default UserInfoSection;
+export default UserInfoSection;  // THIS COMPONENT IS NOT USED 

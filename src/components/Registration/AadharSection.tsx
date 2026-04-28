@@ -1,0 +1,280 @@
+import { useEffect, useState } from "react";
+import {
+  CreditCard,
+  Lock,
+  CircleChevronLeft,
+  Smartphone,
+} from "lucide-react";
+import useABDM from "../../hooks/useABDM";
+import toast from "react-hot-toast";
+
+type Props = {
+  onComplete?: () => void;
+};
+
+const AadharSection = ({ onComplete }: Props) => {
+
+  const { sendAadharOtp, verifyAadharOtp, resendAadharOtp, error } = useABDM();
+
+  const [step, setStep] = useState<"INPUT" | "OTP" | "DONE">("INPUT");
+
+  const [aadhar, setAadhar] = useState("");
+  const [accepted, setAccepted] = useState(false);
+
+  const [otpAadhar, setOtpAadhar] = useState(Array(6).fill(""));
+
+  const [maskedMobile, setMaskedMobile] = useState("XXXXX3690");
+
+  const [timer,setTimer] = useState(30);
+  const [canResend,setCanResend] = useState(false);
+
+  const [txnId, setTxnId] = useState(""); // Store transaction ID for OTP verification and resending
+  const [mobile, setMobile] = useState("");
+
+  // Aadhaar format
+  const formatAadhar = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 12);
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  };
+
+  const handleAadharChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAadhar(formatAadhar(e.target.value));
+  };
+
+  // OTP handler (cleaned: only aadhaar now)
+  const handleOtpChange = (value: string, index: number) => {
+    if (!/^\d?$/.test(value)) return;
+
+    const newOtp = [...otpAadhar];
+    newOtp[index] = value;
+    setOtpAadhar(newOtp);
+
+    const next = document.getElementById(`aadhaar-otp-${index + 1}`);
+    if (value && next) (next as HTMLInputElement).focus();
+  };
+
+  const handleVerify = () => {
+
+    
+
+
+    setStep("DONE");
+    onComplete?.();
+  };
+
+  // Send OTP Service Call - 
+  const handleSendAadharOtp = async () => {
+      
+      const dataToSend = {
+        aadharNumber: aadhar.replace(/\s/g, "")
+      };
+
+      setStep("OTP");
+
+      const response = await sendAadharOtp(dataToSend);
+
+      if(!response || !response.success){
+        toast.error(error || "Failed to send OTP. Please try again.");
+        return;
+      }
+
+      try{
+        
+        const parsed = JSON.parse(response.data);
+
+        if(parsed.success){
+            
+          const txnId = parsed.transactionID;
+
+          setTxnId(txnId);
+          
+          const message = parsed.message;
+
+          const lastDigits = message.match(/(\d{4})$/)?.[0] || "XXXX";
+
+          setMaskedMobile(`XXXXX${lastDigits}`);
+
+          setStep("OTP");
+
+          setTimer(60);
+
+          setCanResend(false);
+
+          toast.success("OTP sent successfully to your registered mobile number.");
+        }
+        else{
+           toast.error(parsed.message || "Failed to send OTP. Please try again.");
+        }
+
+      }
+      catch(err){
+        console.error("OTP Error", err);
+      }
+  }
+
+  useEffect(() => {
+    if (step !== "OTP") return;
+
+    if (timer === 0) {
+      setCanResend(true);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer, step]);
+
+  return (
+    <div className="bg-white rounded-md p-3">
+
+      <div className="space-y-5">
+
+        {/* STEP 1 */}
+        {step === "INPUT" && (
+          <>
+            {/* Aadhaar Input */}
+            <div>
+              <label className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                <CreditCard size={14} />
+                Enter Aadhaar Number
+              </label>
+
+              <input
+                value={aadhar}
+                onChange={handleAadharChange}
+                placeholder="1234 5678 9012"
+                className="w-full md:w-1/2 border rounded-md px-3 py-2 tracking-widest focus:ring-2 focus:ring-blue-600 outline-none"
+              />
+            </div>
+
+            {/* Consent */}
+            <label className="flex items-start gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-1"
+              />
+              I consent to the use of my Aadhaar for ABHA creation as per UIDAI guidelines.
+            </label>
+
+            {/* Continue Button (smaller & cleaner) */}
+            <button
+              disabled={aadhar.replace(/\s/g, "").length !== 12 || !accepted}
+              onClick={() => {
+                  handleSendAadharOtp();
+              }}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md 
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                        hover:bg-blue-700 transition"
+            >
+            Send OTP
+          </button>
+          </>
+        )}
+
+        {/* STEP 2 */}
+       {step === "OTP" && (
+          <>
+            {/* Back Button */}
+            <div
+              onClick={() => setStep("INPUT")}
+              className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 cursor-pointer"
+            >
+              <CircleChevronLeft size={18} />
+              Back
+            </div>
+
+            {/* OTP Info Message */}
+            <div className="text-sm text-gray-600">
+              OTP sent to Aadhaar-linked mobile number{" "}
+              <span className="font-medium text-gray-800">
+                {maskedMobile}
+              </span>
+            </div>
+
+            {/* OTP Input */}
+            <div>
+              <label className="text-sm text-gray-600 mb-2 flex items-center gap-2">
+                <Lock size={14} />
+                Enter Aadhaar OTP
+              </label>
+
+              <div className="flex gap-2">
+                {otpAadhar.map((digit, i) => (
+                  <input
+                    key={i}
+                    id={`aadhaar-otp-${i}`}
+                    value={digit}
+                    onChange={(e) =>
+                      handleOtpChange(e.target.value, i)
+                    }
+                    maxLength={1}
+                    className="w-10 h-10 text-center border rounded-md focus:ring-2 focus:ring-blue-600"
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Resend OTP */}
+            <div className="text-sm text-gray-500">
+
+                {!canResend ? (
+                  <span>Resend OTP in {timer}s</span>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setTimer(30);
+                      setCanResend(false);
+                    }}
+                    className="text-blue-600 cursor-pointer"
+                  >
+                    Resend OTP
+                  </button>
+                )}
+
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                <Smartphone size={14} />
+                Mobile Number
+              </label>
+
+              <div className="flex">
+                <div className="px-3 py-2 bg-gray-100 border border-r-0 rounded-l-md text-gray-600 text-sm">
+                  +91
+                </div>
+                <input
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  placeholder="Enter mobile number"
+                  className="w-full border rounded-r-md px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none"
+                  maxLength={10}
+                />
+              </div>
+
+              <p className="text-xs text-gray-500 mt-1">
+                This mobile number will be used for all future ABHA communications and notifications.
+              </p>
+            </div>
+
+            {/* Verify Button */}
+            <button
+              onClick={handleVerify}
+              className="px-4 py-2 bg-green-600 text-white text-sm rounded-md"
+            >
+              Verify & Continue
+            </button>
+          </>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default AadharSection;

@@ -39,7 +39,7 @@ const LoginPage = () => {
 
     const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
-
+        
         console.log("Login clicked", formdata);
 
         setLoginError(null);
@@ -50,10 +50,10 @@ const LoginPage = () => {
 
         try {
             const res  = await login(formdata);
+
             if(res.success && res.statusCode == 200){
                 navigate('/unitsubscription');
                 //navigate('/module');
-                 
             }
             else {
                 setLoginError(res.message || "Login failed");
@@ -84,12 +84,12 @@ const LoginPage = () => {
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-8">
                 
                <div className="text-center mb-6">
-                    <h1 className="text-2xl font-semibold text-gray-800">
-                        Login
-                    </h1>
-                    <p className="text-sm text-gray-500">
+                    <h2 className="text-center text-gray-600 font-medium">
+                        Sign in to your account
+                    </h2>
+                    {/* <p className="text-sm text-gray-500">
                         (Ayushman Bharat Digital Mission)
-                    </p>
+                    </p> */}
                 </div>
 
                 <form className="flex flex-col gap-4" onSubmit={handleLogin}>
@@ -117,7 +117,7 @@ const LoginPage = () => {
                         {errors.password && <p className='text-red-500 text-sm'>{errors.password}</p>}
                     </div>
                     
-                    <button className="bg-green-600 text-white py-2 rounded hover:bg-green-700 cursor-pointer">
+                    <button type="submit" className="bg-green-600 text-white py-2 rounded hover:bg-green-700 cursor-pointer">
                         Login
                     </button>
 

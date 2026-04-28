@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUnit } from "../context/UnitContext";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 const Header = () => {
 
   const { units,selectedUnit } = useUnit();
   const navigate = useNavigate();
-  const {logout} = useAuth();
+  const {logout,user} = useAuth();
   const selectedUnitObject = units.find(u => u.id === selectedUnit);
 
   const handleLogout = () => {
@@ -58,13 +58,29 @@ const Header = () => {
       </div>
 
       {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm md:text-base font-medium py-1 px-3 sm:px-4 rounded-md transition cursor-pointer"
-      >
-        Logout
-        <LogOut size={16} />
-      </button>
+      <div className="flex items-center gap-3">
+
+        {/* User Info */}
+        <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md cursor-pointer">
+          <User size={18} className="text-gray-600" />
+          <span className="text-sm font-medium text-gray-800">
+            {user}
+          </span>
+        </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center p-2 rounded-md hover:bg-red-100 text-red-600 transition cursor-pointer"
+          title="Logout"
+        >
+          <LogOut size={18} />
+        </button>
+
+      </div>
+
+
+      
 
     </header>
   );

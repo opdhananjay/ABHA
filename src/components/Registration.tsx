@@ -1,270 +1,245 @@
 import { useState } from "react";
-import Modal from "./shared/Modal";
-import OTPVerification from "./OTPVerification";
-import UserInfoSection from "./shared/UserInfoSection";
-import AadharDetails from "./AadharDetails";
-import CreateAddress from "./CreateAddress";
-
-type ModalType = "NONE" | "OTP_VERIFICATION" | "ABHA_ADDRESS";  // opening Modal types
+import AadharSection from "./Registration/AadharSection";
+import { BadgeCheck, ChevronDown, ChevronUp, IdCard, Info, NotebookTabs, ShieldCheck } from "lucide-react";
+import PatinetSection from "./Registration/PatientSection";
+import MobileVerificationSection from "./Registration/MobileVerificationSection";
+import AbhaSection from "./Registration/AbhaSection";
+import UhIdLink from "./Registration/UhidLink";
 
 const Registration = () => {
 
-    const [activeModal,setActiveModal] = useState<ModalType>("NONE");
+    const [activeSection,setActiveSection] = useState("");
 
+    const [status,setStatus] = useState({
+        aadhar:"active",
+        mobile:"pending",  
+        patient:"pending",
+        abha:"pending",
+        uhid:"pending"
+    });
 
-    // Create Abha Address Region Stats 
-    
-    const [suggestedAddresses, setSuggestedAddresses] = useState<string[]>([]);
-    const [selectedAddress,setSelectedAddress] = useState("");  
-    const [customAddress,setCustomAddress] = useState("");
-    const [isFetchingAddresses,setIsFetchingAddresses] = useState(false);
-
-    const handleCreateAbha = async () => {
+    const onCompleteAadharVerification = () => {
         
+        setStatus({...status,aadhar: "completed",mobile: "active"});
+        setActiveSection("MOBILE");
     }
-    
-    // End of Region
-
-
-    // OTT Verification Region Stats
-    
-    const handleNotifyResponseOTPVerification = (response?:any) => {
-        console.log("OTP Verification Result", response);
-    };  
-
-    // End of Region
 
     return (
         <>
             <div className="bg-gray-100 min-h-screen py-4">
-  
+                
                 <div className="max-w-7xl mx-auto px-4 space-y-4">
+                     
+                    <div className="bg-white border rounded-xl p-5 shadow-sm">
+                        {/* Header */}
+                        <div
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() =>
+                                setActiveSection(prev => prev === "AADHAR" ? "" : "AADHAR")
+                            }
+                            >
 
-                    {/* User Info Section */}
-                    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                         <UserInfoSection />
-                    </div>
-
-                    {/* Main Registration */}
-                    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                        ABHA Registration
-                    </h2>
-
-                    <form className="space-y-4">
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                    First Name
-                                </label>
-                                <input type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="text-green-600" size={18} />
+                                <h3 className="font-semibold text-gray-800">
+                                    Aadhaar Verification
+                                </h3>
                             </div>
 
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                    Middle Name
-                                </label>
-                                <input type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
+                            <div className="flex items-center gap-2">
+                              {status.aadhar === "completed" && (
+                                <span className="flex items-center gap-1 text-green-600 text-xs">
+                                    <BadgeCheck size={14} /> Verified
+                                </span>
+                                )}
 
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                    Last Name
-                                </label>
-                                <input type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
-
-                        </div>
-
-                        
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                Age
-                                </label>
-
-                                <input
-                                type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                    Gender
-                                </label>
-
-                                <div className="flex item-center gap-6">
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="male"
-                                            className="accent-green-600"
-                                        />
-                                        Male
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="female"
-                                            className="accent-green-600"
-                                        />
-                                        Female
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="other"
-                                            className="accent-green-600"
-                                        />
-                                        Other
-                                    </label>
-
-                                </div>
-
+                                {activeSection === "AADHAR" ? (
+                                <ChevronUp size={18} />
+                                ) : (
+                                <ChevronDown size={18} />
+                                )}
                             </div>
                         </div>
 
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                            <label className="md:w-40 text-sm font-medium text-gray-700">
-                               Aadhar No.
-                            </label>
-                            <input type="text"
-                             className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                        focus:ring-2 focus:ring-green-500 outline-none"
+                        {/* Body */}
+                        {activeSection === "AADHAR" && (
+                            <div className="mt-4">
+                            <AadharSection
+                                onComplete={() => {
+                                    onCompleteAadharVerification();
+                                }}
                             />
-                            <button type="button" onClick={() => setActiveModal("OTP_VERIFICATION")} className="border border-gray-300 rounded-md px-4 py-2 cursor-pointer bg-green-600 text-white">Verify</button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                Date of Birth
-                                </label>
-
-                                <input
-                                type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
                             </div>
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                 Mobile
-                                </label>
-
-                                <input
-                                type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
-
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            
-                            <div className="flex flex-col md:flex-row md:items-center gap-2     md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                 UHID
-                                </label>
-
-                                <input
-                                type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
-
-                            <div className="flex flex-col md:flex-row md:items-center gap-2     md:gap-4">
-                                <label className="md:w-40 text-sm font-medium text-gray-700">
-                                 ABHA ID
-                                </label>
-
-                                <input
-                                type="text"
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-2
-                                            focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                                <button onClick={() => setActiveModal("ABHA_ADDRESS")}  type="button" className="border border-gray-300 rounded-md px-4 py-2 cursor-pointer bg-gray-300 text-sm">Create Abha</button>
-                            </div>
-
-                        </div>
-
-                    </form>
+                        )}
 
                     </div>
 
-                    {/* Aadhar Details */}
-                    <div>
-                        <AadharDetails/>
+                    <div className="bg-white border rounded-xl p-5 shadow-sm">
+                        {/* Header */}
+                        <div
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() =>
+                                setActiveSection(prev => prev === "MOBILE" ? "" : "MOBILE")
+                            }
+                            >
+
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="text-green-600" size={18} />
+                                <h3 className="font-semibold text-gray-800">
+                                    Mobile Verification
+                                </h3>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {status.mobile === "completed" && (
+                                <span className="flex items-center gap-1 text-green-600 text-xs">
+                                    <BadgeCheck size={14} /> Verified
+                                </span>
+                                )}
+
+                                {activeSection === "MOBILE" ? (
+                                <ChevronUp size={18} />
+                                ) : (
+                                <ChevronDown size={18} />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        {activeSection === "MOBILE" && (
+                            <div className="mt-4">
+                              <MobileVerificationSection onComplete={()=>{
+                                 setStatus({
+                                    ...status,
+                                    mobile: "completed",
+                                    patient: "active"
+                                });
+                                setActiveSection("PATIENT");
+                              }} />
+                            </div>
+                        )}
+
                     </div>
 
-                </div>
+                    <div className="bg-white border rounded-xl p-5 shadow-sm">
+                        {/* Header */}
+                        <div
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() =>
+                                setActiveSection(prev => prev === "PATIENT" ? "" : "PATIENT")
+                            }
+                            >
+                            <div className="flex items-center gap-2">
+                                <Info className="text-green-600" size={18} />
+                                <h3 className="font-semibold text-gray-800">
+                                    Details
+                                </h3>
+                            </div>
 
+                            <div className="flex items-center gap-2">
+                                {status.patient === "completed" && (
+                                    <span className="flex items-center gap-1 text-green-600 text-xs">
+                                        <BadgeCheck size={14} /> Verified
+                                    </span>
+                                )}
+
+                                {activeSection === "PATIENT" ? (
+                                <ChevronUp size={18} />
+                                ) : (
+                                <ChevronDown size={18} />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        {activeSection === "PATIENT" && (
+                            <div className="mt-4">
+                               <PatinetSection />
+                            </div>
+                        )}
+
+                    </div>
+
+                    <div className="bg-white border rounded-xl p-5 shadow-sm">
+                        {/* Header */}
+                        <div
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() =>
+                                setActiveSection(prev => prev === "ABHA" ? "" : "ABHA")
+                            }
+                            >
+                            <div className="flex items-center gap-2">
+                                <NotebookTabs className="text-green-600" size={18} />
+                                <h3 className="font-semibold text-gray-800">
+                                    ABHA Address
+                                </h3>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {status.abha === "completed" && (
+                                    <span className="flex items-center gap-1 text-green-600 text-xs">
+                                        <BadgeCheck size={14} /> Verified
+                                    </span>
+                                )}
+
+                                {activeSection === "ABHA" ? (
+                                <ChevronUp size={18} />
+                                ) : (
+                                <ChevronDown size={18} />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        {activeSection === "ABHA" && (
+                            <div className="mt-4">
+                               <AbhaSection />
+                            </div>
+                        )}
+
+                    </div>
+
+                    <div className="bg-white border rounded-xl p-5 shadow-sm">
+                        {/* Header */}
+                        <div className="flex justify-between items-center cursor-pointer" 
+                            onClick={()=>{
+                                setActiveSection(prev => prev === "UHID" ? "" : "UHID")
+                            }}>
+                           
+                            <div className="flex items-center gap-2">
+                                <IdCard className="text-green-600" size={18} />
+                                <h3 className="font-semibold text-gray-800">
+                                    UHID Linking
+                                </h3>
+                            </div> 
+
+                             <div className="flex items-center gap-2">
+                                {status.uhid === "completed" && (
+                                   <span className="flex items-center gap-1 text-green-600 text-xs">
+                                      <BadgeCheck size={14} /> Verified
+                                   </span>
+                                )}
+
+                                {activeSection === "UHID" ? (
+                                <ChevronUp size={18} />
+                                ) : (
+                                <ChevronDown size={18} />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        {activeSection === "UHID" && (
+                            <div className="mt-4">
+                                <UhIdLink />
+                            </div>
+                        )}
+                        
+                    </div>
+
+                  </div>
             </div>
-
-           <Modal
-                isOpen={activeModal === "OTP_VERIFICATION"}
-                onClose={()=>setActiveModal('NONE')}
-                showCloseBtn={true}
-                title="Aadhar Verification"
-                width="max-w-lg"
-                height="auto"
-            >
-              <OTPVerification
-                    onClose={() => setActiveModal('NONE')}
-                    mode="mobile"
-                    mobileNumber="8104773699"
-                    onSuccess={handleNotifyResponseOTPVerification}
-               />
-           </Modal>
-
-           <Modal isOpen={activeModal === "ABHA_ADDRESS"}
-                onClose={()=>setActiveModal('NONE')}
-                showCloseBtn={true}
-                title="Create ABHA Address"
-                width="max-w-lg"
-                height="auto"
-           >
-               <CreateAddress 
-                    suggestedAddresses={suggestedAddresses}
-                    selectedAddress={selectedAddress}
-                    onSelectAddress={setSelectedAddress}
-                    customAddress={customAddress}
-                    onCustomAddressChange={setCustomAddress}
-                    onSubmit={handleCreateAbha}
-                    loading={isFetchingAddresses}
-               />
-           </Modal>
-
-
-
         </>
-        
     )
 }
 

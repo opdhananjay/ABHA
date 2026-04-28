@@ -59,7 +59,7 @@ const ModulePage = () => {
                             <span className="text-4xl mb-2">⚙️</span>
 
                             <h2 className="font-semibold text-gray-700">
-                            Retriving Data
+                                 Retriving Data
                             </h2>
 
                         </div>

@@ -9,6 +9,7 @@
 
 .main-layout{
     flex: 1;
+    min-width: 0;
 }
 /* Main layout styles Ends */
 
