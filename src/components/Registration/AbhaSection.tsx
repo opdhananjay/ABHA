@@ -1,10 +1,107 @@
 import { SearchCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useABDM from "../../hooks/useABDM";
+import toast from "react-hot-toast";
 
-const AbhaSection = () => {
+type Props = {
+  transactionId:string;
+  onComplete?:(data:any) => void;
+}
+
+const AbhaSection = ({ transactionId,onComplete }:Props) => {
     
+  const [txnId, setTxnId] = useState(transactionId || ""); // Local  
+  const { getSuggestedAbhaIds,checkAbhaIdAvailable,createCustomAbhaId,error} = useABDM();
   const [selectedAddress, setSelectedAddress] = useState("");
   const [custom, setCustom] = useState("");
+  const [suggestedAbhaIds,setSuggestedAbhaIds] = useState([]);
+
+  const getSuggestedAbhaId = async () => {
+    
+    if(transactionId == ""){
+      toast.error("Failed to fetch abha address transaction Id.");
+      return;
+    }
+
+    const dataToSend = {
+      txnId:txnId
+    }
+
+    const response = await getSuggestedAbhaIds(dataToSend);
+
+    if(!response || !response.success){
+      toast.error(error || "Failed to fetch abha address.");
+      return;
+    }
+
+    try{
+
+      const parsed = JSON.parse(response.data);
+
+      if(parsed.success){
+
+        const allAbhaIds = parsed.abhaAddressList;
+
+        setSuggestedAbhaIds(allAbhaIds);
+
+        toast.success(parsed.message || 'fetch succesfully')
+      }
+      else{
+        toast.error(parsed.message || "failed to fetch abha addresses");
+      }
+
+    }
+    catch(err:any){
+      console.error("Error", err);
+    }
+  }
+
+  useEffect(()=>{
+    getSuggestedAbhaId();
+  },[])
+
+  const createAbhaId = async (e:any) => {  
+    
+    e.preventDefault();
+
+    if(custom === ""){
+      toast.error("Kindly use abha id");
+      return;
+    }
+
+    const dataToSend = {
+      txnId:txnId,
+      abhaAddress:custom.trim()
+    }
+
+    const response = await createCustomAbhaId(dataToSend);
+    
+    if(!response || !response.success){
+      toast.error(error || "Failed to create abha id");
+      return;
+    }
+
+    try{
+
+      const parsed = JSON.parse(response.data);
+
+      if(parsed.success){
+        toast.success(parsed.message);
+      }
+      else{
+        toast.error(parsed.message || "Failed to create abha address");
+      }
+
+    }
+    catch(err:any){
+      console.error("Error ",err);
+    }
+
+  }
+
+  const searchAbhaAddress = async () => {
+
+  }
 
   return (
     <div className="space-y-5">
@@ -28,7 +125,8 @@ const AbhaSection = () => {
               checked={selectedAddress === item}
               onChange={() => {
                 setSelectedAddress(item);
-                setCustom(""); 
+                setCustom(item);
+                //setCustom(""); 
               }}
               className="accent-blue-600"
             />
@@ -73,7 +171,7 @@ const AbhaSection = () => {
 
       {/* Action Button */}
       <button
-        disabled={!selectedAddress && !custom}
+        disabled={!selectedAddress && !custom} onClick={createAbhaId}
         className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50"
       >
         Create ABHA Address

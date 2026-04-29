@@ -9,7 +9,7 @@ import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
 
 type Props = {
-  onComplete?: () => void;
+  onComplete?: (data:any,transactionId:string,mobile:string) => void;
 };
 
 const AadharSection = ({ onComplete }: Props) => {
@@ -53,13 +53,60 @@ const AadharSection = ({ onComplete }: Props) => {
     if (value && next) (next as HTMLInputElement).focus();
   };
 
-  const handleVerify = () => {
 
+  const validateVerifyButton = () => {
     
+    if(otpAadhar.some(d => d === "")) {
+      toast.error("Please enter the complete OTP.");
+      return false;
+    };
+
+    if(mobile.length !== 10) {
+      toast.error("Please enter a valid 10-digit mobile number.");
+      return false;
+    };
+
+    return true;
+  }
 
 
-    setStep("DONE");
-    onComplete?.();
+  const handleVerify = async () => {
+
+    if(!validateVerifyButton()) return;
+
+    const dataToSend = {
+      otp: otpAadhar.join(""),
+      txnId: txnId,
+      mobile: mobile
+    }
+
+    //onComplete?.({firstName:'boom', data: dataToSend});
+    //setStep("DONE");  
+
+    const response = await verifyAadharOtp(dataToSend);
+
+    if(!response || !response.success){
+      toast.error(error || "OTP verification failed. Please try again.");
+      return;
+    }
+
+    try{
+
+      const parsed = JSON.parse(response.data);
+
+      if(parsed.success){
+        toast.success("Aadhaar verified successfully!");
+        setStep("DONE");
+        onComplete?.(parsed,txnId);
+      } 
+      else{
+        toast.error(parsed.message || "OTP verification failed. Please try again.");
+      }
+
+    }
+    catch(err){
+      console.error("OTP Verification Error", err);
+    }
   };
 
   // Send OTP Service Call - 
@@ -69,7 +116,7 @@ const AadharSection = ({ onComplete }: Props) => {
         aadharNumber: aadhar.replace(/\s/g, "")
       };
 
-      setStep("OTP");
+      //setStep("OTP");
 
       const response = await sendAadharOtp(dataToSend);
 
@@ -110,6 +157,68 @@ const AadharSection = ({ onComplete }: Props) => {
       catch(err){
         console.error("OTP Error", err);
       }
+  }
+
+  // Validate and Resend OTP Service Call -
+  const validateResend = () => {
+
+    if(timer > 0) {
+      toast.error(`Please wait for ${timer}s before resending OTP.`);
+      return false;
+    }
+
+    if(txnId === "") {
+      toast.error("No transaction found. Please initiate OTP request again.");
+      return false;
+    }
+
+    return true; 
+  }
+
+
+  // Resend OTP Service Call
+  const handleResendAadharOtp = async () => {
+
+    if(!validateResend()) return;
+
+    const dataToSend = {
+      txnId: txnId,
+      aadharNumber: aadhar.replace(/\s/g, ""),
+    }
+
+    const response = await resendAadharOtp(dataToSend);
+
+    if(!response || !response.success){
+      toast.error(error || "Failed to resend OTP. Please try again.");
+      return;
+    }
+
+    try{
+      const parsed = JSON.parse(response.data);
+
+      if(parsed.success){
+
+        const txnId = parsed.transactionID;
+
+        setTxnId(txnId);
+
+        setTimer(60);
+
+        setCanResend(false);
+
+        toast.success("OTP resent successfully to your registered mobile number.");
+      }
+      else{
+        toast.error(parsed.message || "Failed to resend OTP. Please try again.");
+        return;
+      }
+
+    }
+    catch(err){
+      console.error("Resend OTP Error", err);
+    }
+
+   
   }
 
   useEffect(() => {
@@ -227,8 +336,7 @@ const AadharSection = ({ onComplete }: Props) => {
                 ) : (
                   <button
                     onClick={() => {
-                      setTimer(30);
-                      setCanResend(false);
+                      handleResendAadharOtp();
                     }}
                     className="text-blue-600 cursor-pointer"
                   >

@@ -1,7 +1,9 @@
+import GetPatientDetails from "../../components/GetPatientDetails";
+
 const GetDetailsPage = () => {
     return (
         <div>
-            Get abhab details
+           <GetPatientDetails/>
         </div>
     );
 }

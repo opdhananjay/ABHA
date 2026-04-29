@@ -1,12 +1,14 @@
 import { useState } from "react";
 import AadharSection from "./Registration/AadharSection";
 import { BadgeCheck, ChevronDown, ChevronUp, IdCard, Info, NotebookTabs, ShieldCheck } from "lucide-react";
-import PatinetSection from "./Registration/PatientSection";
 import MobileVerificationSection from "./Registration/MobileVerificationSection";
 import AbhaSection from "./Registration/AbhaSection";
 import UhIdLink from "./Registration/UhidLink";
+import PatinetSection from "./Registration/PatientSection";
 
 const Registration = () => {
+
+    const [txnId, setTxnId] = useState(""); // Global 
 
     const [activeSection,setActiveSection] = useState("");
 
@@ -18,10 +20,47 @@ const Registration = () => {
         uhid:"pending"
     });
 
-    const onCompleteAadharVerification = () => {
-        
+    const [patientData, setPatientData] = useState({
+        profile: {},
+        abhaNumber: "",
+        abhaAddress: ""
+    });
+
+    const [aadhaarMobile, setAadhaarMobile] = useState("");
+
+    const onCompleteAadharVerification = (data: any,transactionId:string,mobile:string) => {
+        console.log("Aadhar verification successful. Received data:", data);
+        setTxnId(transactionId);  // Setting Globally
+        console.log('mobile',mobile);
+        setAadhaarMobile(mobile);
+         setPatientData({
+            profile: data.profile || {},   // safe fallback
+            abhaNumber: data.abhaNumber || "",
+            abhaAddress: data.abhaAddress || ""
+        });
+        setAadhaarMobile(data.profile?.mobile || ""); // Extract mobile
         setStatus({...status,aadhar: "completed",mobile: "active"});
         setActiveSection("MOBILE");
+    }
+
+    const onCompleteMobileVerification = () => {
+        setStatus({...status,mobile: "completed",patient: "active"});
+        setActiveSection("PATIENT");
+    }
+
+    const onCompletePatientDetails = () => {
+        setStatus({...status,patient: "completed",abha: "active"});
+        setActiveSection("ABHA");
+    }
+
+    const onCompleteAbha = () => {
+        setStatus({...status,abha: "completed",uhid: "active"});
+        setActiveSection("UHID");
+    }
+
+    const onCompleteUhid = () => {
+        setStatus({...status,uhid: "completed"});
+        setActiveSection("");
     }
 
     return (
@@ -65,8 +104,8 @@ const Registration = () => {
                         {activeSection === "AADHAR" && (
                             <div className="mt-4">
                             <AadharSection
-                                onComplete={() => {
-                                    onCompleteAadharVerification();
+                                onComplete={(data,transactionId,mobile) => {
+                                    onCompleteAadharVerification(data,transactionId,mobile);
                                 }}
                             />
                             </div>
@@ -108,13 +147,8 @@ const Registration = () => {
                         {/* Body */}
                         {activeSection === "MOBILE" && (
                             <div className="mt-4">
-                              <MobileVerificationSection onComplete={()=>{
-                                 setStatus({
-                                    ...status,
-                                    mobile: "completed",
-                                    patient: "active"
-                                });
-                                setActiveSection("PATIENT");
+                              <MobileVerificationSection transactionId={txnId} aadhaarMobile={aadhaarMobile} onComplete={()=>{
+                                 onCompleteMobileVerification();
                               }} />
                             </div>
                         )}
@@ -154,7 +188,9 @@ const Registration = () => {
                         {/* Body */}
                         {activeSection === "PATIENT" && (
                             <div className="mt-4">
-                               <PatinetSection />
+                               <PatinetSection profile={patientData} onComplete={()=>{
+                                    onCompletePatientDetails();
+                               }} />
                             </div>
                         )}
 
@@ -193,7 +229,9 @@ const Registration = () => {
                         {/* Body */}
                         {activeSection === "ABHA" && (
                             <div className="mt-4">
-                               <AbhaSection />
+                               <AbhaSection transactionId={txnId} onComplete={()=>{
+                                    onCompleteAbha();
+                               }}  />
                             </div>
                         )}
 
@@ -231,7 +269,9 @@ const Registration = () => {
                         {/* Body */}
                         {activeSection === "UHID" && (
                             <div className="mt-4">
-                                <UhIdLink />
+                                <UhIdLink onComplete={()=>{
+                                    onCompleteUhid();
+                                }} />
                             </div>
                         )}
                         

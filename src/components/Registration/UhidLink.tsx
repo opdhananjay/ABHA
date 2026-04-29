@@ -1,115 +1,127 @@
 import { useState } from "react";
 import { Search, UserPlus, Link2 } from "lucide-react";
 
-const UhIdLink = () => {
+type Props = {
+  onComplete?: (data: any) => void;
+};
+
+const UhIdLink = ({ onComplete }: Props) => {
 
   const [mode, setMode] = useState<"NEW" | "EXISTING">("NEW");
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([
-    { id: "MR-2024-1001", name: "Rahul Kumar" },
-    { id: "MR-2024-1002", name: "Anil Sharma" }
-  ]);
   const [selected, setSelected] = useState<string | null>(null);
 
+  const results = [
+    { id: "MR-2024-1001", name: "Rahul Kumar" },
+    { id: "MR-2024-1002", name: "Anil Sharma" }
+  ];
+
   return (
-    <div className="p-2">
+    <div className="bg-white rounded-md p-4 space-y-5">
 
-      <div className="space-y-4">
+      {/* Mode Selection */}
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={mode === "NEW"}
+            onChange={() => setMode("NEW")}
+            className="accent-blue-600"
+          />
+          Create New UHID
+        </label>
 
-        <div className="flex flex-col md:flex-row gap-3">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={mode === "EXISTING"}
+            onChange={() => setMode("EXISTING")}
+            className="accent-blue-600"
+          />
+          Link Existing UHID
+        </label>
+      </div>
 
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="radio"
-              checked={mode === "NEW"}
-              onChange={() => setMode("NEW")}
-            />
-            Create NEW UHID
-          </label>
+      {/* NEW UHID */}
+      {mode === "NEW" && (
+        <div className="space-y-3">
 
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="radio"
-              checked={mode === "EXISTING"}
-              onChange={() => setMode("EXISTING")}
-            />
-            Link with EXISTING UHID
-          </label>
+          <div className="text-sm text-gray-600 flex items-center gap-2">
+            <UserPlus size={14} />
+            A new UHID will be created for this patient.
+          </div>
+
+          <button
+            onClick={() => onComplete?.({ type: "NEW" })}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+          >
+            Create UHID & Continue
+          </button>
 
         </div>
+      )}
 
-        {mode === "NEW" && (
-          <div className="bg-gray-50 p-3 rounded-md">
+      {/* EXISTING UHID */}
+      {mode === "EXISTING" && (
+        <div className="space-y-4">
 
-            <div className="flex items-center gap-2 text-gray-700 mb-2">
-              <UserPlus size={15} />
-              <span className="text-sm">
-                Create new UHID for patient
-              </span>
-            </div>
+          {/* Search */}
+          <div>
+            <label className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+              <Search size={14} />
+              Search Patient
+            </label>
 
-            <button className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition">
-              Create UHID & Complete
-            </button>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Enter UHID or Name"
+              className="w-full md:w-1/2 border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+            />
+          </div>
+
+          {/* Results */}
+          <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
+
+            {results
+              .filter(
+                (r) =>
+                  r.name.toLowerCase().includes(search.toLowerCase()) ||
+                  r.id.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((r) => (
+                <label
+                  key={r.id}
+                  className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    checked={selected === r.id}
+                    onChange={() => setSelected(r.id)}
+                    className="accent-blue-600"
+                  />
+
+                  <div className="text-sm">
+                    <p className="text-gray-800">{r.name}</p>
+                    <p className="text-xs text-gray-500">{r.id}</p>
+                  </div>
+                </label>
+              ))}
 
           </div>
-        )}
 
-        {mode === "EXISTING" && (
-          <div className="bg-gray-50 p-3 rounded-md space-y-3">
+          {/* Action */}
+          <button
+            disabled={!selected}
+            onClick={() => onComplete?.({ type: "EXISTING", uhid: selected })}
+            className="px-4 py-2 bg-green-600 text-white text-sm rounded-md disabled:opacity-50 flex items-center gap-2"
+          >
+            <Link2 size={14} />
+            Link UHID & Continue
+          </button>
 
-            <div>
-              <label className="text-xs text-gray-500 mb-1 flex items-center gap-2">
-                <Search size={13} />
-                Search Patient
-              </label>
-
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Enter UHID / Name"
-                className="w-full md:w-1/2 border rounded-md px-2 py-2.5 text-sm focus:ring-1 focus:ring-blue-600 outline-none"
-              />
-            </div>
-
-            <div className="space-y-1 max-h-36 overflow-y-auto">
-
-              {results
-                .filter(
-                  (r) =>
-                    r.name.toLowerCase().includes(search.toLowerCase()) ||
-                    r.id.toLowerCase().includes(search.toLowerCase())
-                )
-                .map((r) => (
-                  <label
-                    key={r.id}
-                    className="flex items-center gap-2 p-1.5 rounded-md cursor-pointer hover:bg-white"
-                  >
-                    <input
-                      type="radio"
-                      checked={selected === r.id}
-                      onChange={() => setSelected(r.id)}
-                    />
-                    <span className="text-sm">
-                      {r.name} ({r.id})
-                    </span>
-                  </label>
-                ))}
-
-            </div>
-
-            <button
-              disabled={!selected}
-              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md disabled:opacity-50 hover:bg-green-700 transition flex items-center gap-2"
-            >
-              <Link2 size={13} />
-              Link UHID & Complete
-            </button>
-
-          </div>
-        )}
-
-      </div>
+        </div>
+      )}
 
     </div>
   );

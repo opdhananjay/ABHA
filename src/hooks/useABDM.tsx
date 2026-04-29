@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { LoaderContext } from "../context/LoaderProvider";
-import { RegisterByAadharService, ResendAadharOTPService, ValidateAadharOTPService } from "../services/abdm.service";
+import { CreateCutomAbhaIDService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidatePhoneOTPService } from "../services/abdm.service";
 
 const useABDM = () => {
 
@@ -67,10 +67,114 @@ const useABDM = () => {
     }
   };
 
+
+  // Mobile Section Stats 
+  
+  const sendPhoneOtp = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+
+      const res = await SendPhoneOTPService(data);
+      return res.data;
+    }  
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to send OTP");
+      return null;
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const verifyPhoneOtp = async (data:any) => {
+     try{
+       setLoading(true);
+       setError(null);
+        
+       const res = await ValidatePhoneOTPService(data);
+       return res.data;
+     } 
+     catch(err:any){
+        setError(err?.response?.data?.message || "Invalid OTP");
+        return null;
+     }
+     finally{
+      setLoading(false);
+     }
+  }
+  
+  // Mobile Section Ends 
+
+  // Get Suggested Abha 
+
+  const getSuggestedAbhaIds = async (data:any) => {
+     try{
+       setLoading(true);
+       setError(null);
+        
+       const res = await GetSuggestedAbhaService(data);
+       return res.data;
+     } 
+     catch(err:any){
+        setError(err?.response?.data?.message || "Failed to fetch abha");
+        return null;
+     }
+     finally{
+      setLoading(false);
+     }
+  }
+
+  const checkAbhaIdAvailable = async (data:any) => {
+     try{
+       setLoading(true);
+       setError(null);
+        
+       const res = await SearchByAbhaAddressService(data);
+       return res.data;
+     } 
+     catch(err:any){
+        setError(err?.response?.data?.message || "Failed to search abha");
+        return null;
+     }
+     finally{
+      setLoading(false);
+     }
+  }
+
+  const createCustomAbhaId = async (data:any) => {
+     try{
+       setLoading(true);
+       setError(null);
+        
+       const res = await CreateCutomAbhaIDService(data);
+       return res.data;
+     } 
+     catch(err:any){
+        setError(err?.response?.data?.message || "Failed to Create abha");
+        return null;
+     }
+     finally{
+      setLoading(false);
+     }
+  }
+
+
+  // Get Suggested Abha 
+
+
   return {
     sendAadharOtp,
     verifyAadharOtp,
     resendAadharOtp,
+
+    sendPhoneOtp,
+    verifyPhoneOtp,
+
+    getSuggestedAbhaIds,
+    checkAbhaIdAvailable,
+    createCustomAbhaId,
+
     error
   };
 };
