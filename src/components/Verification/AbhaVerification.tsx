@@ -12,9 +12,24 @@ import ValidateMobileSection from "../GetDetail/ValidateMobileSection";
 type Mode = "mobile" | "abha";
 
 const AbhaVerification = () => {
+
   const navigate = useNavigate();
 
   const [selectedMode, setSelectedMode] = useState<Mode>("mobile");
+
+  // Handle On Complete 
+  const handleOnComplete = (parsedData, typeData, txnId, type) => {
+      
+      if(type === "mobile"){
+        
+      }
+
+      if(type === "abha"){
+        
+      }
+
+      navigate('/linkabhaverification');  // Pass Through State location 
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen py-4 px-3">
@@ -81,7 +96,9 @@ const AbhaVerification = () => {
               </div>
 
               <div className="mt-4">
-                <ValidateMobileSection />
+                <ValidateMobileSection onComplete={({ parsed, mobile, txnId })=>{
+                    handleOnComplete(parsed,mobile,txnId,"mobile");
+                }} />
               </div>
 
             </div>
@@ -104,7 +121,9 @@ const AbhaVerification = () => {
               </div>
 
               <div className="mt-4">
-                <ValidateAbhaSection />
+                <ValidateAbhaSection onComplete={({ parsed, abhaId, txnId})=>{
+                    handleOnComplete(parsed, abhaId, txnId, "abha");
+                }} />
               </div>
 
             </div>

@@ -9,6 +9,7 @@ import NotFound from "../pages/NotFound/NotFound"
 import GetDetailsPage from "../pages/Registration/GetDetailsPage"
 import UnitSubscriptionPage from "../pages/Module/UnitSubscriptionPage"
 import AbhaVerificationPage from "../pages/Registration/AbhaVerificationPage"
+import LinkAbhaPage from "../pages/Registration/LinkAbhaPage"
 
 const AppRoutes = () => {
 
@@ -56,6 +57,13 @@ const AppRoutes = () => {
                            <AbhaVerificationPage/>
                         </ProtectedRoutes>
                     } />
+
+                    <Route path="/linkabhaverification" element={
+                        <ProtectedRoutes>
+                            <LinkAbhaPage />
+                        </ProtectedRoutes>
+                    }
+                    />
 
                 </Route>
 

@@ -135,6 +135,7 @@ const ValidateAbhaSection = ({ onComplete }: Props) => {
         setStep("DONE");
 
         onComplete?.({
+          parsed,
           abhaAddress,
           txnId 
         });
