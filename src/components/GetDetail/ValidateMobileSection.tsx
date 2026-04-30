@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import { Smartphone, Lock, CircleChevronLeft } from "lucide-react";
+import toast from "react-hot-toast";
+import useABDM from "../../hooks/useABDM";
 
 type Props = {
   onComplete?: (data: any) => void;
 };
 
-const GetDetailsMobileSection = ({ onComplete }: Props) => {
+const ValidateMobileSection = ({ onComplete }: Props) => {
+
+  const { sendOTPByPhone, verifyPhoneOTP, error } = useABDM();
+
+  const [txnId, setTxnId] = useState("");
 
   const [step, setStep] = useState<"INPUT" | "OTP" | "DONE">("INPUT");
 
@@ -15,11 +21,16 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
 
-  // Timer
+  // 🔥 Mask mobile
+  const maskedMobile = mobile
+    ? `XXXXXX${mobile.slice(-4)}`
+    : "";
+
+  // 🔥 Timer logic (clean)
   useEffect(() => {
     if (step !== "OTP") return;
 
-    if (timer === 0) {
+    if (timer <= 0) {
       setCanResend(true);
       return;
     }
@@ -31,7 +42,7 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
     return () => clearInterval(interval);
   }, [timer, step]);
 
-  // OTP input
+  // 🔥 OTP change
   const handleOtpChange = (val: string, index: number) => {
     if (!/^\d?$/.test(val)) return;
 
@@ -39,33 +50,101 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
     newOtp[index] = val;
     setOtp(newOtp);
 
-    const next = document.getElementById(`otp-${index + 1}`);
-    if (val && next) (next as HTMLInputElement).focus();
+    if (val && index < 5) {
+      const next = document.getElementById(`otp-${index + 1}`);
+      next?.focus();
+    }
   };
 
-  // Send OTP
-  const handleSendOtp = () => {
-    if (mobile.length !== 10) return;
+  // 🔥 Send OTP
+  const handleSendOtp = async () => {
 
-    // 👉 API call here later
+    if (mobile.length !== 10) {
+      toast.error("Enter valid 10 digit mobile number");
+      return;
+    }
 
-    setStep("OTP");
-    setTimer(30);
-    setCanResend(false);
-  };
-
-  // Verify OTP
-  const handleVerifyOtp = () => {
-    const enteredOtp = otp.join("");
-    if (enteredOtp.length !== 6) return;
-
-    // 👉 API verify here later
-
-    setStep("DONE");
-
-    onComplete?.({
-      mobile,
+    const response = await sendOTPByPhone({
+      phoneNumber: mobile.trim()
     });
+
+    if (!response || !response.success) {
+      toast.error(error || "Failed to send OTP");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(response.data);
+
+      if (parsed.success) {
+
+        setTxnId(parsed.transactionID);
+
+        setStep("OTP");
+        setOtp(Array(6).fill(""));
+        setTimer(60);
+        setCanResend(false);
+
+        toast.success(parsed.message || "OTP sent successfully");
+
+      } else {
+        toast.error(parsed.message || "Failed to send OTP");
+      }
+
+    } catch (err) {
+      console.error("OTP Parse Error", err);
+      toast.error("Something went wrong");
+    }
+  };
+
+  // 🔥 Verify OTP
+  const handleVerifyOtp = async () => {
+
+    const enteredOtp = otp.join("");
+
+    if (enteredOtp.length !== 6) {
+      toast.error("Enter valid 6 digit OTP");
+      return;
+    }
+
+    const response = await verifyPhoneOTP({
+      otp: enteredOtp,
+      txnId
+    });
+
+    if (!response || !response.success) {
+      toast.error(error || "OTP verification failed");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(response.data);
+
+      if (parsed.success) {
+
+        toast.success(parsed.message || "Verified successfully");
+
+        setStep("DONE");
+
+        onComplete?.({
+          mobile,
+          txnId
+        });
+
+      } else {
+        toast.error(parsed.message || "Invalid OTP");
+      }
+
+    } catch (err) {
+      console.error("Verify Error", err);
+      toast.error("Something went wrong");
+    }
+  };
+
+  // 🔥 Resend
+  const handleResendOTP = () => {
+    if (!canResend) return;
+    handleSendOtp();
   };
 
   return (
@@ -99,7 +178,7 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
           <button
             disabled={mobile.length !== 10}
             onClick={handleSendOtp}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50 cursor-pointer"
           >
             Send OTP
           </button>
@@ -122,7 +201,7 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
           <div className="text-sm text-gray-600">
             OTP sent to mobile{" "}
             <span className="font-medium text-gray-800">
-              {mobile}
+              {maskedMobile}
             </span>
           </div>
 
@@ -155,12 +234,8 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
               <span>Resend OTP in {timer}s</span>
             ) : (
               <button
-                onClick={() => {
-                  setTimer(30);
-                  setCanResend(false);
-                  setOtp(Array(6).fill(""));
-                }}
-                className="text-blue-600 hover:underline"
+                onClick={handleResendOTP}
+                className="text-blue-600 hover:underline cursor-pointer"
               >
                 Resend OTP
               </button>
@@ -170,7 +245,7 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
           <button
             disabled={otp.join("").length !== 6}
             onClick={handleVerifyOtp}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50 cursor-pointer"
           >
             Verify & Continue
           </button>
@@ -188,4 +263,4 @@ const GetDetailsMobileSection = ({ onComplete }: Props) => {
   );
 };
 
-export default GetDetailsMobileSection;
+export default ValidateMobileSection;

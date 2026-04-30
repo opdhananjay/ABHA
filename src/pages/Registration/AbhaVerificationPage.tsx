@@ -1,7 +1,9 @@
+import AbhaVerification from "../../components/Verification/AbhaVerification";
+
 const AbhaVerificationPage = () => {
     return (
         <div>
-            verification
+            <AbhaVerification />
         </div>
     )
 }

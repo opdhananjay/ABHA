@@ -97,7 +97,7 @@ const AadharSection = ({ onComplete }: Props) => {
       if(parsed.success){
         toast.success("Aadhaar verified successfully!");
         setStep("DONE");
-        onComplete?.(parsed,txnId);
+        onComplete?.(parsed,txnId,mobile);
       } 
       else{
         toast.error(parsed.message || "OTP verification failed. Please try again.");
@@ -117,6 +117,7 @@ const AadharSection = ({ onComplete }: Props) => {
       };
 
       //setStep("OTP");
+      setOtpAadhar(Array(6).fill(""));
 
       const response = await sendAadharOtp(dataToSend);
 
@@ -180,6 +181,8 @@ const AadharSection = ({ onComplete }: Props) => {
   const handleResendAadharOtp = async () => {
 
     if(!validateResend()) return;
+
+    setOtpAadhar(Array(6).fill(""));
 
     const dataToSend = {
       txnId: txnId,

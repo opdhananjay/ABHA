@@ -4,104 +4,85 @@ import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
 
 type Props = {
-  transactionId:string;
-  onComplete?:(data:any) => void;
-}
+  transactionId: string;
+  onComplete?: (data: any) => void;
+};
 
-const AbhaSection = ({ transactionId,onComplete }:Props) => {
-    
-  const [txnId, setTxnId] = useState(transactionId || ""); // Local  
-  const { getSuggestedAbhaIds,checkAbhaIdAvailable,createCustomAbhaId,error} = useABDM();
+const AbhaSection = ({ transactionId, onComplete }: Props) => {
+
+  const { getSuggestedAbhaIds, createCustomAbhaId, error } = useABDM();
+
+  const [txnId] = useState(transactionId || "");
   const [selectedAddress, setSelectedAddress] = useState("");
   const [custom, setCustom] = useState("");
-  const [suggestedAbhaIds,setSuggestedAbhaIds] = useState([]);
+  const [suggestedAbhaIds, setSuggestedAbhaIds] = useState<string[]>([]);
 
+  // 🔹 Fetch Suggestions
   const getSuggestedAbhaId = async () => {
-    
-    if(transactionId == ""){
-      toast.error("Failed to fetch abha address transaction Id.");
+
+    if (!txnId) {
+      toast.error("Transaction Id missing");
       return;
     }
 
-    const dataToSend = {
-      txnId:txnId
-    }
+    const response = await getSuggestedAbhaIds({ txnId });
 
-    const response = await getSuggestedAbhaIds(dataToSend);
-
-    if(!response || !response.success){
-      toast.error(error || "Failed to fetch abha address.");
+    if (!response || !response.success) {
+      toast.error(error || "Failed to fetch ABHA addresses");
       return;
     }
 
-    try{
-
+    try {
       const parsed = JSON.parse(response.data);
 
-      if(parsed.success){
-
-        const allAbhaIds = parsed.abhaAddressList;
-
-        setSuggestedAbhaIds(allAbhaIds);
-
-        toast.success(parsed.message || 'fetch succesfully')
+      if (parsed.success) {
+        setSuggestedAbhaIds(parsed.abhaAddressList || []);
+      } else {
+        toast.error(parsed.message || "Failed to fetch suggestions");
       }
-      else{
-        toast.error(parsed.message || "failed to fetch abha addresses");
-      }
-
+    } catch (err) {
+      console.error("Parse error", err);
     }
-    catch(err:any){
+  };
+
+  useEffect(() => {
+    getSuggestedAbhaId();
+  }, []);
+
+  // 🔹 Create ABHA
+  const createAbhaId = async () => {
+
+    const finalAddress = selectedAddress || custom.trim();
+
+    if (!finalAddress) {
+      toast.error("Please select or enter ABHA address");
+      return;
+    }
+
+    const response = await createCustomAbhaId({
+      txnId,
+      abhaAddress: finalAddress,
+    });
+
+    if (!response || !response.success) {
+      toast.error(error || "Failed to create ABHA ID");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(response.data);
+
+      if (parsed.success) {
+        toast.success(parsed.message || "ABHA created successfully");
+
+        onComplete?.(parsed); // 🔥 important
+      } else {
+        toast.error(parsed.message || "Failed to create ABHA");
+      }
+    } catch (err) {
       console.error("Error", err);
     }
-  }
-
-  useEffect(()=>{
-    getSuggestedAbhaId();
-  },[])
-
-  const createAbhaId = async (e:any) => {  
-    
-    e.preventDefault();
-
-    if(custom === ""){
-      toast.error("Kindly use abha id");
-      return;
-    }
-
-    const dataToSend = {
-      txnId:txnId,
-      abhaAddress:custom.trim()
-    }
-
-    const response = await createCustomAbhaId(dataToSend);
-    
-    if(!response || !response.success){
-      toast.error(error || "Failed to create abha id");
-      return;
-    }
-
-    try{
-
-      const parsed = JSON.parse(response.data);
-
-      if(parsed.success){
-        toast.success(parsed.message);
-      }
-      else{
-        toast.error(parsed.message || "Failed to create abha address");
-      }
-
-    }
-    catch(err:any){
-      console.error("Error ",err);
-    }
-
-  }
-
-  const searchAbhaAddress = async () => {
-
-  }
+  };
 
   return (
     <div className="space-y-5">
@@ -112,30 +93,35 @@ const AbhaSection = ({ transactionId,onComplete }:Props) => {
       </h2>
 
       {/* Suggestions */}
-      <div className="max-h-[180px] overflow-y-auto rounded-lg divide-y">
-        {["rahul@abdm", "rahul123@abdm", "rahul.kumar@abdm","rahul@abdm", "rahul123@abdm", "rahul.kumar@abdm"].map((item, i) => (
-          <label
-            key={i}
-            className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
-          >
-            <input
-              type="radio"
-              name="abha"
-              value={item}
-              checked={selectedAddress === item}
-              onChange={() => {
-                setSelectedAddress(item);
-                setCustom(item);
-                //setCustom(""); 
-              }}
-              className="accent-blue-600"
-            />
-            <span className="text-sm">{item}</span>
-          </label>
-        ))}
+      <div className="max-h-[180px] overflow-y-auto rounded-lg border divide-y">
+        {suggestedAbhaIds.length > 0 ? (
+          suggestedAbhaIds.map((item, i) => (
+            <label
+              key={i}
+              className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
+            >
+              <input
+                type="radio"
+                name="abha"
+                value={item}
+                checked={selectedAddress === item}
+                onChange={() => {
+                  setSelectedAddress(item);
+                  setCustom("");
+                }}
+                className="accent-blue-600"
+              />
+              <span className="text-sm">{item}</span>
+            </label>
+          ))
+        ) : (
+          <p className="text-sm text-gray-400 p-3">
+            No suggestions available
+          </p>
+        )}
       </div>
 
-      {/* OR Divider */}
+      {/* OR */}
       <div className="flex items-center gap-2 text-gray-400 text-xs">
         <div className="flex-1 h-[1px] bg-gray-300"></div>
         OR
@@ -150,8 +136,8 @@ const AbhaSection = ({ transactionId,onComplete }:Props) => {
           <input
             value={custom}
             onChange={(e) => {
-              setCustom(e.target.value);
-              setSelectedAddress(""); // unselect radio
+              setCustom(e.target.value.replace(/\s/g, ""));
+              setSelectedAddress("");
             }}
             placeholder="Enter username"
             className="w-full border rounded-l-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
@@ -161,20 +147,21 @@ const AbhaSection = ({ transactionId,onComplete }:Props) => {
           </span>
         </div>
 
-        {/* Example availability (static for now) */}
-        {custom && (
-            <span className="flex items-center gap-1 text-green-600 text-xs">
-                <SearchCheck size={14} /> Available
-            </span>
-        )}
+        {/* Availability UI (static for now) */}
+        {/* {availabilityMsg && (
+          <span className="text-xs text-gray-600">
+            {availabilityMsg}
+          </span>
+        )} */}
       </div>
 
-      {/* Action Button */}
+      {/* Button */}
       <button
-        disabled={!selectedAddress && !custom} onClick={createAbhaId}
+        disabled={!selectedAddress && !custom}
+        onClick={createAbhaId}
         className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-50"
       >
-        Create ABHA Address
+        Continue
       </button>
 
     </div>

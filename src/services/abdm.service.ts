@@ -40,3 +40,33 @@ export const CreateCutomAbhaIDService = (data:any) => {
 }
 
 // Abha Section 
+
+
+// Search Patient 
+
+export const GetPatinetService = (searchText:string) => {
+    return apiClient.post(`ABDM/GetPatient?searchText=${searchText}`)
+}
+
+
+// abha Verification Starts 
+
+export const ValidateAbhaIDByAadharService = (data:any) => {
+    return apiClient.post('/ABDM/ValidateAbhaByAadhar',data);
+}
+
+export const ValidateAbhaIDByAadharOTPService = (data:any) => {
+    return apiClient.post('/ABDM/ValidateAbhaByAadharOTP',data);
+}
+
+
+export const ValidateAbhaByPhoneService = (data:any) => {
+    return apiClient.post('/ABDM/ValidateAbhaByPhone',data);
+}
+
+export const ValidateAbhaByOTPPhoneService = (data:any) => {
+    return apiClient.post('/ABDM/ValidateAbhaByPhoneOtp',data);
+}
+
+
+// Abha Verification Ends 

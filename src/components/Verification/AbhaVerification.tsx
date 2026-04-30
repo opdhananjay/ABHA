@@ -5,13 +5,13 @@ import {
   ShieldCheck,
   NotebookTabs
 } from "lucide-react";
+import ValidateAbhaSection from "../GetDetail/ValidateAbhaSection";
+import ValidateMobileSection from "../GetDetail/ValidateMobileSection";
 
-import ValidateAbhaSection from "./GetDetail/ValidateAbhaSection";
-import ValidateMobileSection from "./GetDetail/ValidateMobileSection";
 
 type Mode = "mobile" | "abha";
 
-const GetPatientDetails = () => {
+const AbhaVerification = () => {
   const navigate = useNavigate();
 
   const [selectedMode, setSelectedMode] = useState<Mode>("mobile");
@@ -34,7 +34,7 @@ const GetPatientDetails = () => {
 
           {/* Title */}
           <h2 className="text-lg font-semibold text-gray-800">
-            Fetch ABHA
+            ABHA Verification 
           </h2>
 
           {/* Mode Selection (Improved) */}
@@ -116,4 +116,4 @@ const GetPatientDetails = () => {
   );
 };
 
-export default GetPatientDetails;
+export default AbhaVerification;

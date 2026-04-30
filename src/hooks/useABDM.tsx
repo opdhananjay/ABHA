@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { LoaderContext } from "../context/LoaderProvider";
-import { CreateCutomAbhaIDService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidatePhoneOTPService } from "../services/abdm.service";
+import { CreateCutomAbhaIDService, GetPatinetService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidateAbhaByOTPPhoneService, ValidateAbhaByPhoneService, ValidateAbhaIDByAadharOTPService, ValidateAbhaIDByAadharService, ValidatePhoneOTPService } from "../services/abdm.service";
+import { data } from "react-router-dom";
 
 const useABDM = () => {
 
@@ -163,6 +164,94 @@ const useABDM = () => {
   // Get Suggested Abha 
 
 
+  // Search Patinet 
+  const getPatient = async (searchText:string) => {
+    try{
+       setError(null);
+       const res = await GetPatinetService(searchText);
+       return res.data;
+    }
+    catch(err:any){
+        setError(err?.response?.data?.message || "Failed to Create abha");
+        return null;
+    }
+    finally{
+
+    }
+  }
+
+
+  // Abha Verification Starts 
+  
+  const sendOTPAbhaIdByAadhar = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+      const res = await ValidateAbhaIDByAadharService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to Send OTP");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  const verifyOTPAbhaIdAadharOTP = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+      const res = await ValidateAbhaIDByAadharOTPService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to Verify OTP");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  const sendOTPByPhone = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+      const res = await ValidateAbhaByPhoneService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to Send Phone OTP");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  const verifyPhoneOTP = async (data:any) => {
+    try{
+      setLoading(false);
+      setError(null);
+      const res = await ValidateAbhaByOTPPhoneService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to Send Phone OTP");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  // Abha Verification Ends 
+
+
+
+
   return {
     sendAadharOtp,
     verifyAadharOtp,
@@ -174,6 +263,13 @@ const useABDM = () => {
     getSuggestedAbhaIds,
     checkAbhaIdAvailable,
     createCustomAbhaId,
+
+    sendOTPAbhaIdByAadhar,
+    verifyOTPAbhaIdAadharOTP,
+    sendOTPByPhone,
+    verifyPhoneOTP,
+
+    getPatient,
 
     error
   };
