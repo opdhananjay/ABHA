@@ -8,7 +8,6 @@ import {
 import ValidateAbhaSection from "../GetDetail/ValidateAbhaSection";
 import ValidateMobileSection from "../GetDetail/ValidateMobileSection";
 
-
 type Mode = "mobile" | "abha";
 
 const AbhaVerification = () => {
@@ -28,7 +27,14 @@ const AbhaVerification = () => {
         
       }
 
-      navigate('/linkabhaverification');  // Pass Through State location 
+      navigate('/linkabhaverification',{
+        state:{
+          parsedData,
+          typeData,
+          txnId,
+          type
+        }
+      });  // Pass Through State location 
   }
 
   return (

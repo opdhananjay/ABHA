@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Info, IdCard, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -10,13 +10,23 @@ const LinkAbhaPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { parsedData } = location.state || {};
+  const { parsedData,typeData,txnId,type } = location.state || {};
 
-  const [activeSection, setActiveSection] = useState<"PATIENT" | "UHID" | null>("UHID");
+  console.log("Parsed Data:", parsedData);
+  console.log("Type Data:", typeData);
+  console.log("Txn Id:", txnId);
+  console.log("Type:", type);
 
+  const [activeSection, setActiveSection] = useState<"PATIENT" | "UHID" | null>("PATIENT");
+
+   useEffect(() => {
+    if (!parsedData) {
+      //navigate("/abhaverification");
+    }
+  }, [parsedData, navigate]); 
+  
   if (!parsedData) {
-    // navigate("/get-details");
-    // return null;
+   // return null;
   }
 
   const patientData = parsedData;
@@ -28,8 +38,20 @@ const LinkAbhaPage = () => {
 
   const onCompleteUhid = (data: any) => {
     console.log("UHID Linked:", data);
-    navigate("/success");
+    //navigate("/success");
   };
+
+  const handlePatinetOnComplete = (data:any) => {
+    console.log('data', data);  
+    setActiveSection('UHID')
+
+  }
+
+  const handleUHIDOnComplete = (data:any) => {
+    console.log('data',data);
+    
+     
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen py-4">
@@ -54,7 +76,7 @@ const LinkAbhaPage = () => {
 
           {activeSection === "PATIENT" && (
             <div className="mt-4">
-              <PatinetSection profile={patientData} onComplete={() => {}} />
+              <PatinetSection profile={patientData} onComplete={(data) =>{ handlePatinetOnComplete(data) }} />
             </div>
           )}
 
@@ -83,7 +105,7 @@ const LinkAbhaPage = () => {
                 patinetName={patientData?.profile?.firstName || ""}
                 abhaAddress={patientData?.abhaAddress}
                 abhaNumber={patientData?.abhaNumber}
-                onComplete={onCompleteUhid}
+                onComplete={(data)=>{ handleUHIDOnComplete(data) }}
               />
             </div>
           )}

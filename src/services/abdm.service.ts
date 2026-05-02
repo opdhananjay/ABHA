@@ -70,3 +70,15 @@ export const ValidateAbhaByOTPPhoneService = (data:any) => {
 
 
 // Abha Verification Ends 
+
+
+// UHID Linking 
+
+export const GetPatientByMrnoService = (mrNo:string) => {
+    return apiClient.post(`/ABDM/GetPatientByMrNo?mrNo${mrNo}`)
+}
+
+export const SavePatientService = (data:any) => {
+    return apiClient.post('/ABDM/save-patient',data);
+}
+

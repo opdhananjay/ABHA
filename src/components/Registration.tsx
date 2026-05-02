@@ -18,6 +18,8 @@ import PatinetSection from "./Registration/PatientSection";
 const Registration = () => {
 
   const [txnId, setTxnId] = useState("");
+  const [aadhar, setAadhar] = useState("");
+
   const [activeSection, setActiveSection] = useState("");
 
 
@@ -49,9 +51,10 @@ const Registration = () => {
   };
 
   // ✅ Aadhaar Done
-  const onCompleteAadharVerification = (data: any, txn: string, mobile: string) => {
+  const onCompleteAadharVerification = (data: any, txn: string, mobile: string, aadhar:string) => {
 
     setTxnId(txn);
+    setAadhar(aadhar);
     setAadhaarMobile(mobile || data.profile?.mobile || "");
 
     setPatientData({
@@ -279,7 +282,7 @@ const Registration = () => {
 
           {activeSection === "UHID" && isAccessible("uhid") && (
             <div className="mt-4">
-              <UhIdLink patinetName={patientData.profile?.firstName || ''}  abhaAddress={patientData.abhaAddress} abhaNumber={patientData.abhaNumber} onComplete={onCompleteUhid} />
+              <UhIdLink profile={patientData.profile} aadhar={aadhar} abhaAddress={patientData.abhaAddress} abhaNumber={patientData.abhaNumber} onComplete={onCompleteUhid} />
             </div>
           )}
         </div>

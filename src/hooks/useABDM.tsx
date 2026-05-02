@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import { LoaderContext } from "../context/LoaderProvider";
-import { CreateCutomAbhaIDService, GetPatinetService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidateAbhaByOTPPhoneService, ValidateAbhaByPhoneService, ValidateAbhaIDByAadharOTPService, ValidateAbhaIDByAadharService, ValidatePhoneOTPService } from "../services/abdm.service";
-import { data } from "react-router-dom";
+import { CreateCutomAbhaIDService, GetPatientByMrnoService, GetPatinetService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SavePatientService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidateAbhaByOTPPhoneService, ValidateAbhaByPhoneService, ValidateAbhaIDByAadharOTPService, ValidateAbhaIDByAadharService, ValidatePhoneOTPService } from "../services/abdm.service";
 
 const useABDM = () => {
 
@@ -233,7 +232,7 @@ const useABDM = () => {
 
   const verifyPhoneOTP = async (data:any) => {
     try{
-      setLoading(false);
+      setLoading(true);
       setError(null);
       const res = await ValidateAbhaByOTPPhoneService(data);
       return res.data;
@@ -249,6 +248,43 @@ const useABDM = () => {
 
   // Abha Verification Ends 
 
+
+  // UHID Linking Starts 
+  
+  const getPatinetByMrno = async (mrNo:string) => {
+    try{
+      setLoading(true);
+      setError(null);
+      const res = await GetPatientByMrnoService(mrNo);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to Get Patient Service");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  const savePatient = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+      const res = await SavePatientService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to save patient");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+
+  // UHID Linking Ends 
 
 
 
@@ -270,6 +306,9 @@ const useABDM = () => {
     verifyPhoneOTP,
 
     getPatient,
+
+    getPatinetByMrno,
+    savePatient,
 
     error
   };

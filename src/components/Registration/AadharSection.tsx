@@ -9,7 +9,7 @@ import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
 
 type Props = {
-  onComplete?: (data:any,transactionId:string,mobile:string) => void;
+  onComplete?: (data:any,transactionId:string,mobile:string,aadhar:string) => void;
 };
 
 const AadharSection = ({ onComplete }: Props) => {
@@ -97,7 +97,7 @@ const AadharSection = ({ onComplete }: Props) => {
       if(parsed.success){
         toast.success("Aadhaar verified successfully!");
         setStep("DONE");
-        onComplete?.(parsed,txnId,mobile);
+        onComplete?.(parsed,txnId,mobile,aadhar);
       } 
       else{
         toast.error(parsed.message || "OTP verification failed. Please try again.");
