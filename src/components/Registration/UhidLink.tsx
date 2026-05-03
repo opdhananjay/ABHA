@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { Search, UserPlus, Link2 } from "lucide-react";
 import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
+import {
+  formatDOB,
+  calculateAge,
+  getSalutation,
+  getDistrictId,
+  getRegionId,
+  getCityId,
+  getCountryId
+} from "../../utils/patientHelpers.ts";
 
 type Props = {
   profile: any;
@@ -87,75 +96,85 @@ const UhIdLink = ({
 
   // ================= PREPARE PAYLOAD =================
   const handlePrepareData = (
-    patientData: any,
-    tranMode: number
-  ) => {
-    return {
-      mrNo:
-        tranMode === 2
-          ? patientData?.mrNo
-          : null,
+  patientData: any,
+  tranMode: number
+) => {
+  const profile =
+    patientData?.profile || {};
 
-      patfname:
-        patientData?.profile?.firstName ||
-        "",
+  const address =
+    profile?.address || {};
 
-      patlname:
-        patientData?.profile?.lastName ||
-        "",
+  return {
+    mrNo:
+      tranMode === 2
+        ? patientData?.mrNo
+        : null,
 
-      patdob:
-        patientData?.profile?.dateOfBirth ||
-        "",       // Format To YYYYMMDD 
+    patfname:
+      profile?.firstName || "",
 
-      patsex:
-        patientData?.profile?.gender ||
-        "",
+    patlname:
+      profile?.lastName || "",
 
-      patmobile:
-        patientData?.profile?.mobile ||
-        "",
+    patdob: formatDOB(
+      profile?.dateOfBirth
+    ),
 
-      patemail:
-        patientData?.profile?.email ||
-        "",
+    patsex:
+      profile?.gender || "",
 
-      pataddr1:
-        patientData?.profile?.address?.line ||
-        "",
+    patmobile:
+      profile?.mobile || "",
 
-      districtid:
-        patientData?.profile?.address?.district ||
-        "414",    // Need Function 
+    patemail:
+      profile?.email || "",
 
-      regionid:
-        patientData?.regionId ||
-        "022",   // Need Function 
+    pataddr1:
+      address?.line || "",
 
-      cityid:
-        patientData?.cityId ||
-        "004",    // Need Function 
+    districtid:
+      getDistrictId(
+        address?.district
+      ),
 
-      countryid:
-        patientData?.countryId ||
-        "079",   // Need Function 
+    regionid:
+      getRegionId(
+        address?.state
+      ),
 
-      zip:
-        patientData?.profile?.address?.pincode ||
-        "",    
+    cityid: getCityId(),
 
-      abhaNumber,
-      abhaAddress,
+    countryid:
+      getCountryId(),
 
-      salutation: "004",    // Need Function 
-      identityCode: "004",  // Right Now Aadhar Only 
-      identityNumber: aadhar,
-      userID: localStorage.getItem('user'),
-      patage: "",  // Need Function 
+    zip:
+      address?.pincode || "",
 
-      tranMode
-    };
+    abhaNumber,
+    abhaAddress,
+
+    salutation:
+      getSalutation(
+        profile?.gender
+      ),
+
+    identityCode: "004",
+    identityNumber: aadhar,
+
+    userID:
+      localStorage.getItem(
+        "user"
+      ) || "",
+
+    patage:
+      calculateAge(
+        profile?.dateOfBirth
+      ),
+
+    tranMode
   };
+};
 
   // ================= COMMON SAVE =================
   const handleSaveAction = async (
