@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 
 import {
@@ -9,9 +9,17 @@ import {
   GetCitiesService,
   GetAreasService
 } from "../services/master.service";
+import { LoaderContext } from "../context/LoaderProvider";
 
 const useMaster = () => {
-  const [loading, setLoading] = useState(false);
+  
+  const context = useContext(LoaderContext);
+  
+  if (!context) {
+    throw new Error("useABDM must be used within LoaderProvider");
+  }
+  
+  const { loading, setLoading } = context;
 
   const [salutations, setSalutations] = useState<any>([]);
   const [countries, setCountries] = useState<any>([]);
@@ -148,7 +156,6 @@ const useMaster = () => {
 
   return {
     loading,
-
     salutations,
     countries,
     states,

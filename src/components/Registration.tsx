@@ -57,6 +57,8 @@ const Registration = () => {
     setAadhar(aadhar);
     setAadhaarMobile(mobile || data.profile?.mobile || "");
 
+    console.log('profile',data)
+
     setPatientData({
       profile: data.profile || {},
       abhaNumber: data.abhaNumber || "",
@@ -84,7 +86,16 @@ const Registration = () => {
   };
 
   // ✅ Patient Done
-  const onCompletePatientDetails = () => {
+  const onCompletePatientDetails = (updatedProfile: any) => {
+
+    setPatientData((prev: any) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        ...updatedProfile
+      }
+    }));
+
     setStatus(prev => ({
       ...prev,
       patient: "completed",
@@ -114,7 +125,6 @@ const Registration = () => {
 
     setActiveSection("");
   };
-
 
   return (
     <div className="bg-gray-100 min-h-screen py-4">

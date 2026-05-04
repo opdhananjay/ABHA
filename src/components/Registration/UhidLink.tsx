@@ -1,20 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Search, UserPlus, Link2 } from "lucide-react";
 import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
 import {
   formatDOB,
-  calculateAge,
-  getSalutation,
-  getDistrictId,
-  getRegionId,
-  getCityId,
-  getCountryId
-} from "../../utils/patientHelpers.ts";
+  calculateAge
+} from "../../utils/patientHelpers";
 
 type Props = {
   profile: any;
-  aadhar:string;
+  aadhar: string;
   abhaAddress: string;
   abhaNumber: string;
   onComplete?: (data: any) => void;
@@ -33,218 +28,317 @@ const UhIdLink = ({
     savePatient
   } = useABDM();
 
-  const [mode, setMode] = useState<"NEW" | "EXISTING">("NEW");
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [mode, setMode] = useState<
+    "NEW" | "EXISTING"
+  >("NEW");
 
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [search, setSearch] =
+    useState("");
 
-  // Patient Name
-  const patinetName = `${profile?.profile?.firstName || ""} ${
-    profile?.profile?.lastName || ""
+  const [selected, setSelected] =
+    useState<string | null>(
+      null
+    );
+
+  const [results, setResults] =
+    useState<any[]>([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const patientName = `${profile?.firstName || ""} ${
+    profile?.lastName || ""
   }`.trim();
 
-  // ================= SEARCH API =================
+  // ================= SEARCH PATIENT =================
   useEffect(() => {
     if (search.length < 3) {
       setResults([]);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setLoading(true);
+    const timer = setTimeout(
+      async () => {
+        setLoading(true);
 
-      try {
-        const res = await getPatient(search);
+        try {
+          const res =
+            await getPatient(
+              search
+            );
 
-        if (res && res.success) {
-          setResults(res.data || []);
-        } else {
+          if (
+            res &&
+            res.success
+          ) {
+            setResults(
+              res.data || []
+            );
+          } else {
+            setResults([]);
+          }
+        } catch (err) {
+          console.error(err);
           setResults([]);
         }
-      } catch (err) {
-        console.error("Search error", err);
-        setResults([]);
-      }
 
-      setLoading(false);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  // ================= COMMON VALIDATION =================
-  const validateCommon = () => {
-    if (!profile) {
-      toast.error("Patient profile not found");
-      return false;
-    }
-
-    if (!abhaAddress) {
-      toast.error("ABHA Address missing");
-      return false;
-    }
-
-    if (!abhaNumber) {
-      toast.error("ABHA Number missing");
-      return false;
-    }
-
-    return true;
-  };
-
-  // ================= PREPARE PAYLOAD =================
-  const handlePrepareData = (
-  patientData: any,
-  tranMode: number
-) => {
-  const profile =
-    patientData?.profile || {};
-
-  const address =
-    profile?.address || {};
-
-  return {
-    mrNo:
-      tranMode === 2
-        ? patientData?.mrNo
-        : null,
-
-    patfname:
-      profile?.firstName || "",
-
-    patlname:
-      profile?.lastName || "",
-
-    patdob: formatDOB(
-      profile?.dateOfBirth
-    ),
-
-    patsex:
-      profile?.gender || "",
-
-    patmobile:
-      profile?.mobile || "",
-
-    patemail:
-      profile?.email || "",
-
-    pataddr1:
-      address?.line || "",
-
-    districtid:
-      getDistrictId(
-        address?.district
-      ),
-
-    regionid:
-      getRegionId(
-        address?.state
-      ),
-
-    cityid: getCityId(),
-
-    countryid:
-      getCountryId(),
-
-    zip:
-      address?.pincode || "",
-
-    abhaNumber,
-    abhaAddress,
-
-    salutation:
-      getSalutation(
-        profile?.gender
-      ),
-
-    identityCode: "004",
-    identityNumber: aadhar,
-
-    userID:
-      localStorage.getItem(
-        "user"
-      ) || "",
-
-    patage:
-      calculateAge(
-        profile?.dateOfBirth
-      ),
-
-    tranMode
-  };
-};
-
-  // ================= COMMON SAVE =================
-  const handleSaveAction = async (
-    data: any
-  ) => {
-    try {
-      const response = await savePatient(data);
-
-      if (!response || !response.success) {
-        toast.error("Failed to save patient");
-        return;
-      }
-
-      toast.success(
-        response.message ||
-          "UHID linked successfully"
-      );
-
-      onComplete?.(response.data);
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong");
-    }
-  };
-
-  // ================= CREATE NEW =================
-  const handleCreateNewUHID = async () => {
-    if (!validateCommon()) return;
-
-    const payload = handlePrepareData(
-      profile,
-      1
+        setLoading(false);
+      },
+      500
     );
 
-    await handleSaveAction(payload);
+    return () =>
+      clearTimeout(timer);
+  }, [search]);
+
+  // ================= VALIDATION =================
+  const validateCommon =
+    () => {
+      if (!profile) {
+        toast.error(
+          "Patient profile missing"
+        );
+        return false;
+      }
+
+      if (!abhaNumber) {
+        toast.error(
+          "ABHA Number missing"
+        );
+        return false;
+      }
+
+      if (!abhaAddress) {
+        toast.error(
+          "ABHA Address missing"
+        );
+        return false;
+      }
+
+      if(!localStorage.getItem("user")){
+        toast.error('Kindly login again');
+        return false;
+      }
+
+      if(!localStorage.getItem("user")){
+        toast.error('Kindly select unit');
+        return false;
+      }
+
+      return true;
+    };
+
+  // ================= PREPARE SAVE PAYLOAD =================
+  const handlePrepareData = (
+    patientData: any,
+    tranMode: number
+  ) => {
+    const profileData =
+      patientData || {};
+
+    const address =
+      patientData?.address || {};
+
+    return {
+      // Existing patient only
+      mrNo:
+        tranMode === 2
+          ? patientData?.mrNo
+          : null,
+
+      // =========================
+      // ABDM DATA (Readonly)
+      // =========================
+      patfname:
+        profileData?.firstName || "",
+
+      patlname:
+        profileData?.lastName || "",
+
+      patdob: formatDOB(
+        profileData?.dateOfBirth
+      ),
+
+      patsex:
+        profileData?.gender || "",
+
+      patmobile:
+        profileData?.mobile || "",
+
+      pataddr1:
+        address?.line || "",
+
+      zip:
+        address?.pincode || "",
+
+      abhaNumber,
+      abhaAddress,
+
+      identityNumber:
+        aadhar || "",
+
+      // =========================
+      // USER FILLED FIELDS
+      // =========================
+      patemail:
+        profileData?.email || "",
+
+      salutation:
+        profileData?.salutationId || "",
+
+      districtid:
+        profileData?.districtId || "",
+
+      regionid:
+        profileData?.stateId || "",
+
+      cityid:
+        profileData?.cityId || "",
+
+      // India default
+      countryid: "079",
+
+      // Optional fields
+      maritalStatus:
+        profileData?.maritalStatus || "",
+
+      occupation:
+        profileData?.occupation || "",
+
+      religion:
+        profileData?.religion || "",
+
+      bloodGroup:
+        profileData?.bloodGroup || "",
+
+      // =========================
+      // SYSTEM FIELDS
+      // =========================
+      patage:
+        calculateAge(
+          profileData?.dateOfBirth
+        ),
+
+      userID:
+        localStorage.getItem(
+          "user"
+        ),
+
+      appUnitSelection:
+        localStorage.getItem(
+          "selectedUnit"
+        ),
+
+      tranMode
+    };
   };
 
-  // ================= LINK EXISTING =================
-  const handleLinkUHID = async () => {
-    if (!validateCommon()) return;
+  // ================= COMMON SAVE =================
+  const handleSaveAction =
+    async (
+      payload: any
+    ) => {
+      try {
+        const response =
+          await savePatient(
+            payload
+          );
 
-    if (!selected) {
-      toast.error("Kindly Select Patient");
-      return;
-    }
+        if (!response || !response.success) {
+          toast.error(
+            "Failed to save patient"
+          );
+           return;
+        }
 
-    try {
-      const response =
-        await getPatinetByMrno(selected);
+        toast.success(
+          response.message ||
+            "UHID linked successfully"
+        );
 
-      if (!response || !response.success) {
+        onComplete?.(
+          response.data
+        );
+
+      } 
+      catch (err) {
+        console.error(err);
         toast.error(
-          "Failed to fetch patient details"
+          "Something went wrong"
+        );
+      }
+    };
+
+  // ================= CREATE NEW =================
+  const handleCreateNewUHID =
+    async () => {
+      if (
+        !validateCommon()
+      )
+        return;
+      console.log('profile uhid',profile)
+      const payload =
+        handlePrepareData(
+          profile,
+          1
+        );
+      console.log('payload payload',payload)
+
+      await handleSaveAction(
+        payload
+      );
+    };
+
+  // ================= LINK EXISTING =================
+  const handleLinkUHID =
+    async () => {
+      if (
+        !validateCommon()
+      )
+        return;
+
+      if (!selected) {
+        toast.error(
+          "Please select patient"
         );
         return;
       }
 
-      const payload = handlePrepareData(
-        response.data,
-        2
-      );
+      try {
+        const response =
+          await getPatinetByMrno(
+            selected
+          );
 
-      await handleSaveAction(payload);
+        if (
+          !response ||
+          !response.success
+        ) {
+          toast.error(
+            "Failed to fetch patient details"
+          );
+          return;
+        }
 
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to link patient");
-    }
-  };
+        const payload =
+          handlePrepareData(
+            response.data,
+            2
+        );
+
+        console.log('payload',payload);
+
+        await handleSaveAction(
+          payload
+        );
+      } 
+      catch (err) {
+        console.error(err);
+        toast.error(
+          "Failed to link patient"
+        );
+      }
+    };
 
   return (
     <div className="bg-white rounded-md p-4 space-y-5">
@@ -254,8 +348,12 @@ const UhIdLink = ({
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input
             type="radio"
-            checked={mode === "NEW"}
-            onChange={() => setMode("NEW")}
+            checked={
+              mode === "NEW"
+            }
+            onChange={() =>
+              setMode("NEW")
+            }
             className="accent-blue-600"
           />
           Create New UHID
@@ -264,29 +362,40 @@ const UhIdLink = ({
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input
             type="radio"
-            checked={mode === "EXISTING"}
-            onChange={() => setMode("EXISTING")}
+            checked={
+              mode ===
+              "EXISTING"
+            }
+            onChange={() =>
+              setMode(
+                "EXISTING"
+              )
+            }
             className="accent-blue-600"
           />
           Link Existing UHID
         </label>
       </div>
 
-      {/* ================= NEW UHID ================= */}
+      {/* ================= NEW ================= */}
       {mode === "NEW" && (
         <div className="space-y-3">
 
-          {/* Patient Info */}
           <div className="bg-gray-50 border rounded-md p-3 text-sm space-y-1">
-            <p className="text-gray-700">
+            <p>
               <span className="font-medium">
                 Patient:
               </span>{" "}
-              {patinetName}
+              {
+                patientName
+              }
             </p>
 
-            <p className="text-gray-500 text-xs">
-              ABHA: {abhaAddress}
+            <p className="text-xs text-gray-500">
+              ABHA:{" "}
+              {
+                abhaAddress
+              }
             </p>
           </div>
 
@@ -296,29 +405,37 @@ const UhIdLink = ({
           </div>
 
           <button
-            onClick={handleCreateNewUHID}
+            onClick={
+              handleCreateNewUHID
+            }
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
           >
-            Create UHID & Continue
+            Create UHID &
+            Continue
           </button>
         </div>
       )}
 
-      {/* ================= EXISTING UHID ================= */}
-      {mode === "EXISTING" && (
+      {/* ================= EXISTING ================= */}
+      {mode ===
+        "EXISTING" && (
         <div className="space-y-4">
 
-          {/* Patient Info */}
           <div className="bg-gray-50 border rounded-md p-3 text-sm space-y-1">
-            <p className="text-gray-700">
+            <p>
               <span className="font-medium">
                 Patient:
               </span>{" "}
-              {patinetName}
+              {
+                patientName
+              }
             </p>
 
-            <p className="text-gray-500 text-xs">
-              ABHA: {abhaAddress}
+            <p className="text-xs text-gray-500">
+              ABHA:{" "}
+              {
+                abhaAddress
+              }
             </p>
           </div>
 
@@ -330,72 +447,105 @@ const UhIdLink = ({
             </label>
 
             <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setSelected(null);
+              value={
+                search
+              }
+              onChange={(
+                e
+              ) => {
+                setSearch(
+                  e.target
+                    .value
+                );
+                setSelected(
+                  null
+                );
               }}
               placeholder="Enter Name / MRNO / Mobile"
-              className="w-full md:w-1/2 border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+              className="w-full md:w-1/2 border rounded-md px-3 py-2 text-sm"
             />
           </div>
 
-          {/* Results */}
+          {/* Search Results */}
           <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
 
             {loading && (
-              <p className="text-sm text-gray-500 p-2">
+              <p className="p-2 text-sm text-gray-500">
                 Searching...
               </p>
             )}
 
             {!loading &&
-              results.length === 0 &&
-              search.length >= 3 && (
-                <p className="text-sm text-gray-400 p-2">
-                  No results found
+              results.length ===
+                0 &&
+              search.length >=
+                3 && (
+                <p className="p-2 text-sm text-gray-400">
+                  No results
+                  found
                 </p>
               )}
 
-            {results.map((r: any) => (
-              <label
-                key={r.mrNo}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
-              >
-                <input
-                  type="radio"
-                  checked={selected === r.mrNo}
-                  onClick={() =>
-                    setSelected((prev) =>
-                      prev === r.mrNo
-                        ? null
-                        : r.mrNo
-                    )
+            {results.map(
+              (
+                item: any
+              ) => (
+                <label
+                  key={
+                    item.mrNo
                   }
-                  readOnly
-                  className="accent-blue-600"
-                />
+                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    checked={
+                      selected ===
+                      item.mrNo
+                    }
+                    onClick={() =>
+                      setSelected(
+                        (
+                          prev
+                        ) =>
+                          prev ===
+                          item.mrNo
+                            ? null
+                            : item.mrNo
+                      )
+                    }
+                    readOnly
+                    className="accent-blue-600"
+                  />
 
-                <div className="text-sm">
-                  <p className="text-gray-800">
-                    {r.firstName}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {r.mrNo}
-                  </p>
-                </div>
-              </label>
-            ))}
+                  <div className="text-sm">
+                    <p>
+                      {
+                        item.firstName
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {
+                        item.mrNo
+                      }
+                    </p>
+                  </div>
+                </label>
+              )
+            )}
           </div>
 
-          {/* Action */}
           <button
-            disabled={!selected}
-            onClick={handleLinkUHID}
+            disabled={
+              !selected
+            }
+            onClick={
+              handleLinkUHID
+            }
             className="px-4 py-2 bg-green-600 text-white text-sm rounded-md disabled:opacity-50 flex items-center gap-2"
           >
             <Link2 size={14} />
-            Link UHID & Continue
+            Link UHID &
+            Continue
           </button>
         </div>
       )}

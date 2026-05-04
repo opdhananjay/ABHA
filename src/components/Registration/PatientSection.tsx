@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import useMaster from "../../hooks/useMaster";
+import toast from "react-hot-toast";
 
 type Props = {
   profile: any;
@@ -11,12 +12,20 @@ const PatinetSection = ({
   profile,
   onComplete,
 }: Props) => {
-  
+
+  const patientProfile =
+    profile?.profile || {};
+
+  const patientAddress =
+    patientProfile?.address || {};
+
   const {
+    salutations,
     states,
     districts,
     cities,
     countries,
+    getSalutations,
     getStates,
     getDistricts,
     getCities,
@@ -24,463 +33,397 @@ const PatinetSection = ({
   } = useMaster();
 
   const [formData, setFormData] =
-    useState<any>(profile);
+    useState<any>({
+      ...profile,
+      email: "",
+      salutationId: "",
+      stateId: "",
+      districtId: "",
+      cityId: "",
+      countryId: "",
+    });
 
-  // ================= LOAD MASTER DATA =================
+  // ---------------- LOAD MASTER DATA ----------------
   useEffect(() => {
-    getStates();
-    getDistricts();
-    getCities();
-    getCountries();
+    const loadMasterData = async () => {
+      await Promise.all([
+        getSalutations(),
+        getStates(),
+        getDistricts(),
+        getCities(),
+        getCountries(),
+      ]);
+    };
+
+    loadMasterData();
   }, []);
 
-  // ================= AUTO MAP ABDM DATA =================
+  // ---------------- AUTO MAP ----------------
   useEffect(() => {
-    if (!profile) return;
+    if (
+      !profile ||
+      salutations.length === 0 ||
+      states.length === 0 ||
+      districts.length === 0 ||
+      countries.length === 0
+    ) {
+      return;
+    }
 
-    const matchedState =
-      states.find(
-        (item: any) =>
-          item.text
-            ?.toLowerCase()
-            .trim() ===
-          profile?.address?.state
-            ?.toLowerCase()
-            .trim()
-      );
+    setFormData((prev: any) => {
+      if (prev?.countryId) return prev;
 
-    const matchedDistrict =
-      districts.find(
-        (item: any) =>
-          item.text
-            ?.toLowerCase()
-            .trim() ===
-          profile?.address?.district
-            ?.toLowerCase()
-            .trim()
-      );
+      const matchedSalutation =
+        salutations.find(
+          (item: any) =>
+            item.defGender?.toUpperCase() ===
+              patientProfile?.gender?.toUpperCase() &&
+            item.status === "A"
+        );
 
-    const matchedCountry =
-      countries.find(
-        (item: any) =>
-          item.text
-            ?.toLowerCase()
-            .trim() === "india"
-      );
+      const matchedState =
+        states.find(
+          (item: any) =>
+            item.text?.toLowerCase().trim() ===
+            patientAddress?.state
+              ?.toLowerCase()
+              ?.trim()
+        );
 
-    setFormData((prev: any) => ({
-      ...prev,
-      email: prev?.email || "",
-      stateId:
-        matchedState?.value || "",
-      districtId:
-        matchedDistrict?.value ||
-        "",
-      countryId:
-        matchedCountry?.value ||
-        "",
-      cityId:
-        prev?.cityId || "",
-    }));
+      const matchedDistrict =
+        districts.find(
+          (item: any) =>
+            item.text?.toLowerCase().trim() ===
+            patientAddress?.district
+              ?.toLowerCase()
+              ?.trim()
+        );
+
+      const matchedCountry =
+        countries.find(
+          (item: any) =>
+            item.text
+              ?.toLowerCase()
+              ?.includes("india")
+        );
+
+      return {
+        ...prev,
+        salutationId:
+          matchedSalutation?.value || "",
+        stateId:
+          matchedState?.value || "",
+        districtId:
+          matchedDistrict?.value || "",
+        countryId:
+          matchedCountry?.value || "",
+      };
+    });
   }, [
+    profile,
+    salutations,
     states,
     districts,
     countries,
-    profile,
   ]);
 
-  return (
-    <>
-      <div className="bg-white border-gray-200">
+  const formatOptions = (
+    data: any[]
+  ) =>
+    data.map((item: any) => ({
+      label: item.text,
+      value: item.value,
+    }));
 
-        <div className="text-xs text-gray-500 px-03 py-2 mb-2">
-          Patient details are fetched from Aadhaar.
+  // ---------------- VALIDATION ----------------
+  const handleContinue = () => {
+    if (!formData?.salutationId) {
+      toast.error(
+        "Please select salutation"
+      );
+      return;
+    }
+
+    if (!formData?.email?.trim()) {
+      toast.error(
+        "Please enter email"
+      );
+      return;
+    }
+
+    if (!formData?.stateId) {
+      toast.error(
+        "Please select state"
+      );
+      return;
+    }
+
+    if (!formData?.districtId) {
+      toast.error(
+        "Please select district"
+      );
+      return;
+    }
+
+    if (!formData?.cityId) {
+      toast.error(
+        "Please select city"
+      );
+      return;
+    }
+
+    onComplete?.(formData);
+  };
+
+  return (
+    <div className="bg-white border-gray-200">
+
+      <div className="text-xs text-gray-500 py-2 mb-2">
+        Patient details are fetched from Aadhaar.
+      </div>
+
+      <form className="space-y-4">
+
+        {/* SALUTATION */}
+        <DropdownField
+          label="Salutation"
+          options={formatOptions(
+            salutations.filter(
+              (x: any) =>
+                x.status === "A"
+            )
+          )}
+          value={formData?.salutationId}
+          onChange={(value: any) =>
+            setFormData({
+              ...formData,
+              salutationId: value,
+            })
+          }
+        />
+
+        {/* NAME */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField
+            label="First Name"
+            value={
+              patientProfile?.firstName
+            }
+          />
+
+          <InputField
+            label="Middle Name"
+            value={
+              patientProfile?.middleName
+            }
+          />
+
+          <InputField
+            label="Last Name"
+            value={
+              patientProfile?.lastName
+            }
+          />
+
+          <InputField
+            label="DOB"
+            value={
+              patientProfile?.dateOfBirth
+            }
+          />
+
+          <InputField
+            label="Mobile"
+            value={
+              patientProfile?.mobile
+            }
+          />
+
+          <InputField
+            label="ABHA Number"
+            value={
+              profile?.abhaNumber
+            }
+          />
+
+          <InputField
+            label="ABHA Address"
+            value={
+              profile?.abhaAddress
+            }
+          />
+
+          <InputField
+            label="Gender"
+            value={
+              patientProfile?.gender === "M"
+                ? "Male"
+                : patientProfile?.gender === "F"
+                ? "Female"
+                : patientProfile?.gender === "O"
+                ? "Other"
+                : ""
+            }
+          />
         </div>
 
-        <form className="space-y-4">
+        {/* EMAIL */}
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+          <label className="md:w-40 text-sm font-medium text-gray-700">
+            Email
+          </label>
 
-          {/* NAME SECTION */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            value={formData?.email}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                email:
+                  e.target.value,
+              })
+            }
+            className="flex-1 border rounded-md px-3 py-2"
+          />
+        </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                First Name
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.firstName || ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
+        {/* ADDRESS */}
+        <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+          <label className="md:w-40 text-sm font-medium text-gray-700">
+            Address
+          </label>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                Middle Name
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.middleName ||
-                  ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
+          <textarea
+            readOnly
+            value={`${patientAddress?.line || ""}, ${patientAddress?.district || ""}, ${patientAddress?.state || ""}`}
+            className="flex-1 border rounded-md px-3 py-2 bg-gray-100"
+          />
+        </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.lastName || ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
+        {/* DROPDOWNS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Gender */}
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                Gender
-              </label>
+          <DropdownField
+            label="State"
+            options={formatOptions(
+              states
+            )}
+            value={
+              formData?.stateId
+            }
+            onChange={(value: any) =>
+              setFormData({
+                ...formData,
+                stateId: value,
+              })
+            }
+          />
 
-              <div className="flex items-center gap-6 pointer-events-none opacity-70">
+          <DropdownField
+            label="District"
+            options={formatOptions(
+              districts
+            )}
+            value={
+              formData?.districtId
+            }
+            onChange={(value: any) =>
+              setFormData({
+                ...formData,
+                districtId: value,
+              })
+            }
+          />
 
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    checked={
-                      profile?.gender ===
-                      "M"
-                    }
-                    readOnly
-                  />
-                  Male
-                </label>
+          <DropdownField
+            label="City"
+            options={formatOptions(
+              cities
+            )}
+            value={
+              formData?.cityId
+            }
+            onChange={(value: any) =>
+              setFormData({
+                ...formData,
+                cityId: value,
+              })
+            }
+          />
 
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    checked={
-                      profile?.gender ===
-                      "F"
-                    }
-                    readOnly
-                  />
-                  Female
-                </label>
+          <InputField
+            label="Country"
+            value="India"
+          />
+        </div>
 
-              </div>
-            </div>
-          </div>
+        <InputField
+          label="Pincode"
+          value={
+            patientAddress?.pincode
+          }
+        />
 
-          {/* DOB + Mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button
+          type="button"
+          onClick={
+            handleContinue
+          }
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          Continue
+        </button>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                DOB
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.dateOfBirth ||
-                  ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                Mobile
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.mobile || ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
-
-          </div>
-
-          {/* EMAIL */}
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <label className="md:w-40 text-sm font-medium text-gray-700">
-              Email
-            </label>
-
-            <input
-              type="email"
-              value={
-                formData?.email || ""
-              }
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  email:
-                    e.target.value,
-                })
-              }
-              placeholder="Enter email"
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2"
-            />
-          </div>
-
-          {/* ABHA DETAILS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                ABHA Number
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.abhaNumber ||
-                  ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <label className="md:w-40 text-sm font-medium text-gray-700">
-                ABHA Address
-              </label>
-              <input
-                readOnly
-                value={
-                  profile?.abhaAddress ||
-                  ""
-                }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-              />
-            </div>
-
-          </div>
-
-          {/* ADDRESS */}
-          <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
-            <label className="md:w-40 text-sm font-medium text-gray-700">
-              Address
-            </label>
-
-            <textarea
-              readOnly
-              value={`${profile?.address?.line || ""}, ${profile?.address?.district || ""}, ${profile?.address?.state || ""} - ${profile?.address?.pincode || ""}`}
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-            />
-          </div>
-
-          {/* DROPDOWNS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            {/* State */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                State
-              </label>
-
-              <Select
-                options={states.map(
-                  (item: any) => ({
-                    label:
-                      item.text,
-                    value:
-                      item.value,
-                  })
-                )}
-                value={states
-                  .map(
-                    (
-                      item: any
-                    ) => ({
-                      label:
-                        item.text,
-                      value:
-                        item.value,
-                    })
-                  )
-                  .find(
-                    (
-                      item: any
-                    ) =>
-                      item.value ===
-                      formData?.stateId
-                  )}
-                onChange={(
-                  selected: any
-                ) =>
-                  setFormData({
-                    ...formData,
-                    stateId:
-                      selected?.value,
-                  })
-                }
-              />
-            </div>
-
-            {/* District */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                District
-              </label>
-
-              <Select
-                options={districts.map(
-                  (item: any) => ({
-                    label:
-                      item.text,
-                    value:
-                      item.value,
-                  })
-                )}
-                value={districts
-                  .map(
-                    (
-                      item: any
-                    ) => ({
-                      label:
-                        item.text,
-                      value:
-                        item.value,
-                    })
-                  )
-                  .find(
-                    (
-                      item: any
-                    ) =>
-                      item.value ===
-                      formData?.districtId
-                  )}
-                onChange={(
-                  selected: any
-                ) =>
-                  setFormData({
-                    ...formData,
-                    districtId:
-                      selected?.value,
-                  })
-                }
-              />
-            </div>
-
-            {/* City */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                City
-              </label>
-
-              <Select
-                options={cities.map(
-                  (item: any) => ({
-                    label:
-                      item.text,
-                    value:
-                      item.value,
-                  })
-                )}
-                onChange={(
-                  selected: any
-                ) =>
-                  setFormData({
-                    ...formData,
-                    cityId:
-                      selected?.value,
-                  })
-                }
-              />
-            </div>
-
-            {/* Country */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Country
-              </label>
-
-              <Select
-                options={countries.map(
-                  (item: any) => ({
-                    label:
-                      item.text,
-                    value:
-                      item.value,
-                  })
-                )}
-                value={countries
-                  .map(
-                    (
-                      item: any
-                    ) => ({
-                      label:
-                        item.text,
-                      value:
-                        item.value,
-                    })
-                  )
-                  .find(
-                    (
-                      item: any
-                    ) =>
-                      item.value ===
-                      formData?.countryId
-                  )}
-                onChange={(
-                  selected: any
-                ) =>
-                  setFormData({
-                    ...formData,
-                    countryId:
-                      selected?.value,
-                  })
-                }
-              />
-            </div>
-
-          </div>
-
-          {/* PINCODE */}
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <label className="md:w-40 text-sm font-medium text-gray-700">
-              Pincode
-            </label>
-
-            <input
-              readOnly
-              value={
-                profile?.address
-                  ?.pincode || ""
-              }
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-            />
-          </div>
-
-          {/* CONTINUE */}
-          <div>
-            <button
-              type="button"
-              onClick={() =>
-                onComplete?.(
-                  formData
-                )
-              }
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-            >
-              Continue
-            </button>
-          </div>
-
-        </form>
-      </div>
-    </>
+      </form>
+    </div>
   );
 };
 
 export default PatinetSection;
+
+
+// ---------------- INPUT ----------------
+const InputField = ({
+  label,
+  value,
+}: any) => (
+  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+    <label className="md:w-40 text-sm font-medium text-gray-700">
+      {label}
+    </label>
+
+    <input
+      readOnly
+      value={value || ""}
+      className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
+    />
+  </div>
+);
+
+
+// ---------------- DROPDOWN ----------------
+const DropdownField = ({
+  label,
+  options,
+  value,
+  onChange,
+}: any) => (
+  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+    <label className="md:w-40 text-sm font-medium text-gray-700">
+      {label}
+    </label>
+
+    <Select
+      className="flex-1"
+      options={options}
+      value={options.find(
+        (item: any) =>
+          item.value === value
+      )}
+      onChange={(selected: any) =>
+        onChange(
+          selected?.value
+        )
+      }
+    />
+  </div>
+);

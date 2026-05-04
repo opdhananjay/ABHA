@@ -116,7 +116,7 @@ const AadharSection = ({ onComplete }: Props) => {
         aadharNumber: aadhar.replace(/\s/g, "")
       };
 
-      //setStep("OTP");
+      setStep("OTP");
       setOtpAadhar(Array(6).fill(""));
 
       const response = await sendAadharOtp(dataToSend);

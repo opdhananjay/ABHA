@@ -1,7 +1,13 @@
-export const formatDOB = (dob: string) => {
+export const formatDOB = (
+  dob: string
+) => {
   if (!dob) return "";
 
-  return dob.replace(/-/g, "");
+  if (dob.includes("-")) {
+    return dob.replaceAll("-", "");
+  }
+
+  return dob;
 };
 
 export const calculateAge = (dob: string) => {

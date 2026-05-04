@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronUp,
   ShieldCheck,
   NotebookTabs
 } from "lucide-react";
@@ -17,7 +16,7 @@ const AbhaVerification = () => {
   const [selectedMode, setSelectedMode] = useState<Mode>("mobile");
 
   // Handle On Complete 
-  const handleOnComplete = (parsedData, typeData, txnId, type) => {
+  const handleOnComplete = (parsedData:any, typeData:string, txnId:string, type:string) => {
       
       if(type === "mobile"){
         

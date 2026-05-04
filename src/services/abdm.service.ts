@@ -75,10 +75,16 @@ export const ValidateAbhaByOTPPhoneService = (data:any) => {
 // UHID Linking 
 
 export const GetPatientByMrnoService = (mrNo:string) => {
-    return apiClient.post(`/ABDM/GetPatientByMrNo?mrNo${mrNo}`)
+    return apiClient.post(`/ABDM/GetPatientByMrNo?mrNo=${mrNo}`)
 }
 
 export const SavePatientService = (data:any) => {
     return apiClient.post('/ABDM/save-patient',data);
 }
 
+
+// Get Card 
+
+export const GenerateAbhaCardService = (data:any) => {
+    return apiClient.post('/ABDM/GetAbhaCard', data);
+}

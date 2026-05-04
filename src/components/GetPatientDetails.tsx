@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronUp,
   ShieldCheck,
   NotebookTabs
 } from "lucide-react";
@@ -12,9 +11,31 @@ import ValidateMobileSection from "./GetDetail/ValidateMobileSection";
 type Mode = "mobile" | "abha";
 
 const GetPatientDetails = () => {
+  
   const navigate = useNavigate();
 
   const [selectedMode, setSelectedMode] = useState<Mode>("mobile");
+
+  const handleOnComplete = (parsed:string, typeData:string, txnId:string, type:string) => {
+      
+    if(type == "mobile"){
+
+    }
+
+    if(type == "abha"){
+
+    }
+
+    // Take Abha Number from Parsed Data & Pass it 
+
+    navigate('/getabhacard',{
+      state:{
+        abhaNumber:'1233',
+        transactionId:txnId
+      }
+    });
+
+  } 
 
   return (
     <div className="bg-gray-100 min-h-screen py-4 px-3">
@@ -81,7 +102,9 @@ const GetPatientDetails = () => {
               </div>
 
               <div className="mt-4">
-                <ValidateMobileSection />
+                <ValidateMobileSection  onComplete={({ parsed, mobile, txnId })=>{
+                    handleOnComplete(parsed, mobile, txnId, "mobile")
+                }} />
               </div>
 
             </div>
@@ -104,7 +127,9 @@ const GetPatientDetails = () => {
               </div>
 
               <div className="mt-4">
-                <ValidateAbhaSection />
+                <ValidateAbhaSection onComplete={({ parsed, abhaId, txnId})=>{
+                    handleOnComplete(parsed, abhaId, txnId, "abha")
+                }} />
               </div>
 
             </div>

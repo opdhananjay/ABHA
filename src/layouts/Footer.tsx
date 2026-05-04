@@ -1,12 +1,12 @@
 const Footer = () => {
   return (
-    <footer className="w-full border-t bg-white text-gray-600 text-sm">
+    <footer className="w-full bg-white text-gray-600 text-sm shadow-md">
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
 
         {/* Left */}
         <p className="text-center md:text-left">
-          © {new Date().getFullYear()} ABDM. All rights reserved.
+          © {new Date().getFullYear()} AIPL. All rights reserved.
         </p>
 
         {/* Right */}
