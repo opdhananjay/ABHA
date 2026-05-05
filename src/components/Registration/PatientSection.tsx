@@ -5,12 +5,16 @@ import toast from "react-hot-toast";
 
 type Props = {
   profile: any;
+  aadhar:string;
   onComplete?: (data: any) => void;
+  isCompleted?: boolean;
 };
 
 const PatinetSection = ({
   profile,
+  aadhar,
   onComplete,
+  isCompleted
 }: Props) => {
 
   const patientProfile =
@@ -32,15 +36,18 @@ const PatinetSection = ({
     getCountries,
   } = useMaster();
 
+  const [isLocked, setIsLocked] = useState(isCompleted || false);
+
   const [formData, setFormData] =
     useState<any>({
       ...profile,
-      email: "",
-      salutationId: "",
-      stateId: "",
-      districtId: "",
-      cityId: "",
-      countryId: "",
+      email: patientProfile?.email || "",
+      aadhar:patientProfile?.aadhar || "",
+      salutationId:patientProfile?.salutationId || "",
+      stateId:patientProfile?.stateId || "",
+      districtId:patientProfile?.districtId || "",
+      cityId:patientProfile?.cityId || "",
+      countryId:patientProfile?.countryId || "",
     });
 
   // ---------------- LOAD MASTER DATA ----------------
@@ -151,6 +158,13 @@ const PatinetSection = ({
       return;
     }
 
+    if (!aadhar && !formData?.aadhar) {
+      toast.error(
+          "Please enter Aadhaar number"
+      );
+      return;
+    }
+
     if (!formData?.stateId) {
       toast.error(
         "Please select state"
@@ -171,6 +185,8 @@ const PatinetSection = ({
       );
       return;
     }
+
+    setIsLocked(true);
 
     onComplete?.(formData);
   };
@@ -285,6 +301,29 @@ const PatinetSection = ({
             className="flex-1 border rounded-md px-3 py-2"
           />
         </div>
+
+        {!aadhar && (
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <label className="md:w-40 text-sm font-medium text-gray-700">
+              Aadhaar Number
+            </label>
+
+            <input
+              type="text"
+              maxLength={12}
+              value={formData?.aadhar || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  aadhar: e.target.value
+                })
+              }
+              className="flex-1 border rounded-md px-3 py-2"
+              placeholder="Enter Aadhaar Number"
+            />
+          </div>
+        )}
+
 
         {/* ADDRESS */}
         <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">

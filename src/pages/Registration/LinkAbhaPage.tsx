@@ -1,39 +1,68 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Info, IdCard, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Info,
+  IdCard,
+  ChevronDown,
+  ChevronUp,
+  Lock,
+  BadgeCheck,
+} from "lucide-react";
 
 import PatinetSection from "../../components/Registration/PatientSection";
 import UhIdLink from "../../components/Registration/UhidLink";
 
 const LinkAbhaPage = () => {
-
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { parsedData,typeData,txnId,type } = location.state || {};
+  const [aadhar, setAadhar] = useState("");
+
+  const { parsedData, typeData, txnId, type } = location.state || {};
 
   console.log("Parsed Data:", parsedData);
   console.log("Type Data:", typeData);
   console.log("Txn Id:", txnId);
   console.log("Type:", type);
 
-  const [activeSection, setActiveSection] = useState<"PATIENT" | "UHID" | null>("PATIENT");
+  const [activeSection, setActiveSection] = useState<"PATIENT" | "UHID" | null>(
+    "PATIENT",
+  );
+  const [status, setStatus] = useState({
+    patient: "active",
+    uhid: "pending",
+  });
 
-   useEffect(() => {
+  useEffect(() => {
     if (!parsedData) {
       //navigate("/abhaverification");
     }
-  }, [parsedData, navigate]); 
-  
+  }, [parsedData, navigate]);
+
   if (!parsedData) {
-   // return null;
+    // return null;
   }
 
-  const patientData = parsedData;
+  const [patientData, setPatientData] = useState(parsedData);
 
-  const toggleSection = (section: "PATIENT" | "UHID") => {
-    setActiveSection(prev => (prev === section ? null : section));
-    // 👆 no collapse for patient (optional logic tweak)
+  const isAccessible = (key: keyof typeof status) => {
+    if (key === "patient" && status[key] === "completed") {
+      return true;
+    }
+
+    return status[key] === "active";
+  };
+  const toggleSection = (
+    section: "PATIENT" | "UHID",
+    key: keyof typeof status,
+  ) => {
+    const canOpen =
+      status[key] === "active" ||
+      (key === "patient" && status[key] === "completed");
+
+    if (!canOpen) return;
+
+    setActiveSection((prev) => (prev === section ? null : section));
   };
 
   const onCompleteUhid = (data: any) => {
@@ -41,77 +70,147 @@ const LinkAbhaPage = () => {
     //navigate("/success");
   };
 
-  const handlePatinetOnComplete = (data:any) => {
-    console.log('data', data);  
-    setActiveSection('UHID')
+  const handlePatinetOnComplete = (data: any) => {
+    console.log("data", data);
 
-  }
+    setStatus((prev) => ({
+      ...prev,
+      patient: "completed",
+      uhid: "active",
+    }));
 
-  const handleUHIDOnComplete = (data:any) => {
-    console.log('data',data);
-    
-     
-  }
+    setPatientData((prev: any) => ({
+      ...prev,
+
+      profile: {
+        ...prev.profile,
+
+        email: data.email,
+        aadhar: data.aadhar,
+
+        salutationId: data.salutationId,
+
+        stateId: data.stateId,
+
+        districtId: data.districtId,
+
+        cityId: data.cityId,
+
+        countryId: data.countryId,
+
+        maritalStatus: data.maritalStatus,
+
+        occupation: data.occupation,
+
+        religion: data.religion,
+
+        bloodGroup: data.bloodGroup,
+      },
+    }));
+
+    setAadhar(data.aadhar || "");
+
+    setActiveSection("UHID");
+  };
+
+  const handleUHIDOnComplete = (data: any) => {
+    console.log("data", data);
+
+    setStatus((prev) => ({
+      ...prev,
+      uhid: "completed",
+    }));
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen py-4">
       <div className="max-w-7xl mx-auto px-4 space-y-4">
-
         {/* ================= PATIENT ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleSection("PATIENT")}
+            className={`flex justify-between items-center ${
+              status.patient === "active" || status.patient === "completed"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
+            }`}
+            onClick={() => toggleSection("PATIENT", "patient")}
           >
             <div className="flex items-center gap-2">
               <Info className="text-green-600" size={18} />
-              <h3 className="font-semibold text-gray-800">
-                Patient Details
-              </h3>
+              <h3 className="font-semibold text-gray-800">Patient Details</h3>
             </div>
 
-            {activeSection === "PATIENT" ? <ChevronUp /> : <ChevronDown />}
+            <div className="flex items-center gap-2">
+              {status.patient === "completed" && (
+                <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                  <BadgeCheck size={16} />
+                  Completed
+                </span>
+              )}
+
+              {activeSection === "PATIENT" ? <ChevronUp /> : <ChevronDown />}
+            </div>
           </div>
 
-          {activeSection === "PATIENT" && (
+          {activeSection === "PATIENT" && isAccessible("patient") && (
             <div className="mt-4">
-              <PatinetSection profile={patientData} onComplete={(data) =>{ handlePatinetOnComplete(data) }} />
+              <PatinetSection
+                profile={patientData}
+                aadhar={aadhar}
+                isCompleted={status.patient === "completed"}
+                onComplete={(data) => {
+                  handlePatinetOnComplete(data);
+                }}
+              />
             </div>
           )}
-
         </div>
 
         {/* ================= UHID ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleSection("UHID")}
+            className={`flex justify-between items-center ${
+              status.uhid === "active"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
+            }`}
+            onClick={() => toggleSection("UHID", "uhid")}
           >
             <div className="flex items-center gap-2">
               <IdCard className="text-green-600" size={18} />
-              <h3 className="font-semibold text-gray-800">
-                UHID Linking
-              </h3>
+              <h3 className="font-semibold text-gray-800">UHID Linking</h3>
             </div>
 
-            {activeSection === "UHID" ? <ChevronUp /> : <ChevronDown />}
+            <div className="flex items-center gap-2">
+              {!isAccessible("uhid") && status.uhid !== "completed" && (
+                <Lock size={14} />
+              )}
+
+              {status.uhid === "completed" && (
+                <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                  <BadgeCheck size={16} />
+                  Completed
+                </span>
+              )}
+
+              {activeSection === "UHID" ? <ChevronUp /> : <ChevronDown />}
+            </div>
           </div>
 
-          {activeSection === "UHID" && (
+          {activeSection === "UHID" && isAccessible("uhid") && (
             <div className="mt-4">
               <UhIdLink
-                patinetName={patientData?.profile?.firstName || ""}
-                abhaAddress={patientData?.abhaAddress}
-                abhaNumber={patientData?.abhaNumber}
-                onComplete={(data)=>{ handleUHIDOnComplete(data) }}
+                profile={patientData.profile}
+                aadhar={aadhar}
+                abhaAddress={patientData.abhaAddress}
+                abhaNumber={patientData.abhaNumber}
+                onComplete={(data) => {
+                  handleUHIDOnComplete(data);
+                }}
               />
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );

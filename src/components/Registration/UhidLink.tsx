@@ -174,8 +174,7 @@ const UhIdLink = ({
       abhaNumber,
       abhaAddress,
 
-      identityNumber:
-        aadhar || "",
+      identityNumber:aadhar || profileData?.aadhar || "",
 
       // =========================
       // USER FILLED FIELDS

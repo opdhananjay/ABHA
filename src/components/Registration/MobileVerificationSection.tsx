@@ -65,6 +65,9 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
       mobile:mobile
     }
 
+    setStep("DONE");
+    onComplete?.();
+
     const response = await verifyPhoneOtp(dataToSend);
 
     if(!response && !response.success){
@@ -96,6 +99,8 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
        txnId:txnId,
        phoneNumber:mobile
     }
+
+    setStep("OTP");
 
     const response = await sendPhoneOtp(dataToSend)
 

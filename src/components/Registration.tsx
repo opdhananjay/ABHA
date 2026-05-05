@@ -8,7 +8,7 @@ import {
   Info,
   NotebookTabs,
   ShieldCheck,
-  Lock
+  Lock,
 } from "lucide-react";
 import MobileVerificationSection from "./Registration/MobileVerificationSection";
 import AbhaSection from "./Registration/AbhaSection";
@@ -16,59 +16,80 @@ import UhIdLink from "./Registration/UhidLink";
 import PatinetSection from "./Registration/PatientSection";
 
 const Registration = () => {
-
   const [txnId, setTxnId] = useState("");
   const [aadhar, setAadhar] = useState("");
 
   const [activeSection, setActiveSection] = useState("");
 
-
   // active , pending , completed
   const [status, setStatus] = useState({
     aadhar: "active",
-    mobile: "active",
-    patient: "active",
-    abha: "active",
-    uhid: "active"
+    mobile: "pending",
+    patient: "pending",
+    abha: "pending",
+    uhid: "pending",
   });
 
   const [patientData, setPatientData] = useState<any>({
     profile: {},
     abhaNumber: "",
-    abhaAddress: ""
+    abhaAddress: "",
   });
 
   const [aadhaarMobile, setAadhaarMobile] = useState("");
 
   // 🔒 Lock logic
+  // const isAccessible = (key: keyof typeof status) => {
+  //   return status[key] === "active" || status[key] === "completed";
+  // };
+
+  // const toggleSection = (section: string, key: keyof typeof status) => {
+  //   if (!isAccessible(key)) return;
+  //   setActiveSection(prev => (prev === section ? "" : section));
+  // };
+
+  // 🔒 Lock logic
   const isAccessible = (key: keyof typeof status) => {
-    return status[key] === "active" || status[key] === "completed";
+    if (key === "patient" && status[key] === "completed") {
+      return true;
+    }
+
+    return status[key] === "active";
   };
 
   const toggleSection = (section: string, key: keyof typeof status) => {
-    if (!isAccessible(key)) return;
-    setActiveSection(prev => (prev === section ? "" : section));
+    const canOpen =
+      status[key] === "active" ||
+      (key === "patient" && status[key] === "completed");
+
+    if (!canOpen) return;
+
+    setActiveSection((prev) => (prev === section ? "" : section));
   };
 
   // ✅ Aadhaar Done
-  const onCompleteAadharVerification = (data: any, txn: string, mobile: string, aadhar:string) => {
-
+  const onCompleteAadharVerification = (
+    data: any,
+    txn: string,
+    mobile: string,
+    aadhar: string,
+  ) => {
     setTxnId(txn);
     setAadhar(aadhar);
     setAadhaarMobile(mobile || data.profile?.mobile || "");
 
-    console.log('profile',data)
+    console.log("profile", data);
 
     setPatientData({
       profile: data.profile || {},
       abhaNumber: data.abhaNumber || "",
-      abhaAddress: data.abhaAddress || ""
+      abhaAddress: data.abhaAddress || "",
     });
 
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
       aadhar: "completed",
-      mobile: "active"
+      mobile: "active",
     }));
 
     setActiveSection("MOBILE");
@@ -76,10 +97,10 @@ const Registration = () => {
 
   // ✅ Mobile Done
   const onCompleteMobileVerification = () => {
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
       mobile: "completed",
-      patient: "active"
+      patient: "active",
     }));
 
     setActiveSection("PATIENT");
@@ -87,19 +108,18 @@ const Registration = () => {
 
   // ✅ Patient Done
   const onCompletePatientDetails = (updatedProfile: any) => {
-
     setPatientData((prev: any) => ({
       ...prev,
       profile: {
         ...prev.profile,
-        ...updatedProfile
-      }
+        ...updatedProfile,
+      },
     }));
 
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
       patient: "completed",
-      abha: "active"
+      abha: "active",
     }));
 
     setActiveSection("ABHA");
@@ -107,10 +127,10 @@ const Registration = () => {
 
   // ✅ ABHA Done
   const onCompleteAbha = () => {
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
       abha: "completed",
-      uhid: "active"
+      uhid: "active",
     }));
 
     setActiveSection("UHID");
@@ -118,9 +138,9 @@ const Registration = () => {
 
   // ✅ UHID Done
   const onCompleteUhid = () => {
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
-      uhid: "completed"
+      uhid: "completed",
     }));
 
     setActiveSection("");
@@ -128,20 +148,21 @@ const Registration = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen py-4">
-     
       <div className="max-w-7xl mx-auto px-4 space-y-4">
 
         {/* ================= AADHAAR ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-          <div
-            className={`flex justify-between items-center ${
-              !isAccessible("aadhar") ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+          <div className={`flex justify-between items-center ${status.aadhar === "active"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
             }`}
             onClick={() => toggleSection("AADHAR", "aadhar")}
           >
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-green-600" size={18} />
-              <h3 className="font-semibold text-gray-800">Aadhaar Verification</h3>
+              <h3 className="font-semibold text-gray-800">
+                Aadhaar Verification
+              </h3>
             </div>
 
             <div className="flex items-center gap-2">
@@ -164,16 +185,18 @@ const Registration = () => {
 
         {/* ================= MOBILE ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
-            className={`flex justify-between items-center ${
-              !isAccessible("mobile") ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+            className={`flex justify-between items-center ${status.mobile === "active"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
             }`}
             onClick={() => toggleSection("MOBILE", "mobile")}
           >
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-green-600" size={18} />
-              <h3 className="font-semibold text-gray-800">Mobile Verification</h3>
+              <h3 className="font-semibold text-gray-800">
+                Mobile Verification
+              </h3>
             </div>
 
             <div className="flex items-center gap-2">
@@ -200,10 +223,12 @@ const Registration = () => {
 
         {/* ================= PATIENT ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
             className={`flex justify-between items-center ${
-              !isAccessible("patient") ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+               status.patient === "active" ||
+                status.patient === "completed"
+                ? " cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
             }`}
             onClick={() => toggleSection("PATIENT", "patient")}
           >
@@ -227,6 +252,8 @@ const Registration = () => {
             <div className="mt-4">
               <PatinetSection
                 profile={patientData}
+                aadhar={aadhar}
+                isCompleted={status.patient === "completed"}
                 onComplete={onCompletePatientDetails}
               />
             </div>
@@ -235,10 +262,11 @@ const Registration = () => {
 
         {/* ================= ABHA ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
             className={`flex justify-between items-center ${
-              !isAccessible("abha") ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              status.abha === "active"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
             }`}
             onClick={() => toggleSection("ABHA", "abha")}
           >
@@ -267,10 +295,11 @@ const Registration = () => {
 
         {/* ================= UHID ================= */}
         <div className="bg-white border rounded-xl p-5 shadow-sm">
-
           <div
             className={`flex justify-between items-center ${
-              !isAccessible("uhid") ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              status.uhid == "active"
+                ? "cursor-pointer"
+                : "opacity-60 cursor-not-allowed"
             }`}
             onClick={() => toggleSection("UHID", "uhid")}
           >
@@ -292,11 +321,16 @@ const Registration = () => {
 
           {activeSection === "UHID" && isAccessible("uhid") && (
             <div className="mt-4">
-              <UhIdLink profile={patientData.profile} aadhar={aadhar} abhaAddress={patientData.abhaAddress} abhaNumber={patientData.abhaNumber} onComplete={onCompleteUhid} />
+              <UhIdLink
+                profile={patientData.profile}
+                aadhar={aadhar}
+                abhaAddress={patientData.abhaAddress}
+                abhaNumber={patientData.abhaNumber}
+                onComplete={onCompleteUhid}
+              />
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

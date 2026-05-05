@@ -37,47 +37,47 @@ const useABDM = () => {
       setLoading(true);
       setError(null);
 
-      const res = await ValidateAadharOTPService(data);
-      return res.data;
+    // const res = await ValidateAadharOTPService(data);
+    // return res.data;
 
-    // return {
-    //   success: true,
-    //   data: JSON.stringify({
-    //     success: true,
-    //     abhaNumber:
-    //       "91-4819-7073-1234",
-    //     abhaAddress:
-    //       "username@sbx",
+    return {
+      success: true,
+      data: JSON.stringify({
+        success: true,
+        abhaNumber:
+          "91-4819-7073-1234",
+        abhaAddress:
+          "username@sbx",
 
-    //     profile: {
-    //       firstName: "John",
-    //       middleName: "",
-    //       lastName: "Doe",
+        profile: {
+          firstName: "John",
+          middleName: "",
+          lastName: "Doe",
 
-    //       dateOfBirth:
-    //         "1990-08-15",
+          dateOfBirth:
+            "1990-08-15",
 
-    //       gender: "M",
+          gender: "M",
 
-    //       mobile:
-    //         "9876543210",
+          mobile:
+            "9876543210",
 
-    //       address: {
-    //         line:
-    //           "123 Main Street",
-    //         district:
-    //           "Central",
-    //         state:
-    //           "Delhi",
-    //         pincode:
-    //           "110001",
-    //       },
-    //     },
+          address: {
+            line:
+              "123 Main Street",
+            district:
+              "Central",
+            state:
+              "Delhi",
+            pincode:
+              "110001",
+          },
+        },
 
-    //     message:
-    //       "OTP verified successfully",
-    //   }),
-    // }
+        message:"This account already exist"
+          //"OTP verified successfully",
+      }),
+    }
 
     } catch (err: any) {
       setError(err?.response?.data?.message || "Invalid OTP");
@@ -365,6 +365,32 @@ const useABDM = () => {
     }
   };
 
+
+  const checkAbhaExistHMIS = (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+
+      // const res = await CheckAbhaExistService(data);
+      // return res.data;
+
+      return {
+        success:false
+      }
+
+    }
+    catch(err:any){
+      setError(
+        err?.response?.data?.message ||
+          "Failed to Check Abha Exists"
+      );
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
   return {
     sendAadharOtp,
     verifyAadharOtp,
@@ -388,6 +414,8 @@ const useABDM = () => {
     savePatient,
 
     generateAbhaCard,
+
+    checkAbhaExistHMIS,
 
     error
   };

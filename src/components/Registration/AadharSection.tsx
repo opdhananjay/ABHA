@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
+import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   onComplete?: (data:any,transactionId:string,mobile:string,aadhar:string) => void;
@@ -14,7 +16,16 @@ type Props = {
 
 const AadharSection = ({ onComplete }: Props) => {
 
-  const { sendAadharOtp, verifyAadharOtp, resendAadharOtp, error } = useABDM();
+  const navigate = useNavigate();
+
+  const { sendAadharOtp, verifyAadharOtp, resendAadharOtp, checkAbhaExistHMIS, error } = useABDM();
+
+  const [showModal,setShowModal] = useState<any>({
+    abhalink:false,
+    abhacard:false
+  });  // For Opening Confirmation Modal
+  
+
 
   const [step, setStep] = useState<"INPUT" | "OTP" | "DONE">("INPUT");
 
@@ -30,6 +41,12 @@ const AadharSection = ({ onComplete }: Props) => {
 
   const [txnId, setTxnId] = useState(""); // Store transaction ID for OTP verification and resending
   const [mobile, setMobile] = useState("");
+
+
+  const [abhaAddress,setAbhaAddress] = useState("");
+  const [abhaNumber,setAbhaNumber] = useState("");
+
+  const [abhaParsedData,setAbhaParsedData] = useState<any>({});
 
   // Aadhaar format
   const formatAadhar = (value: string) => {
@@ -80,6 +97,11 @@ const AadharSection = ({ onComplete }: Props) => {
       mobile: mobile
     }
 
+    // setAbhaAddress("addres");
+    // setShowModal((prev:any)=>({
+    //   ...prev,
+    //   abhalink:true,
+    // }));
     //onComplete?.({firstName:'boom', data: dataToSend});
     //setStep("DONE");  
 
@@ -95,8 +117,62 @@ const AadharSection = ({ onComplete }: Props) => {
       const parsed = JSON.parse(response.data);
 
       if(parsed.success){
+        
         toast.success("Aadhaar verified successfully!");
+        
+        // Cheking Abha Existing in System 
+        const abhaAddress = parsed.abhaAddress;
+        const abhaNumber = parsed.abhaNumber;
+        const normalizedMessage = parsed.message?.trim()?.toLowerCase();
+
+        if(abhaAddress && abhaNumber){ 
+          
+          try{
+            
+            const dataToExistingRes = {
+                abhaAddress,
+                abhaNumber
+            }
+
+            const existingResponse = await checkAbhaExistHMIS(dataToExistingRes);
+            
+            // ABHA Alredy Exists && Alredy Link With HMIS - Show Abha Card 
+            if(normalizedMessage === "this account already exist" && existingResponse && existingResponse?.success){
+                
+                setAbhaAddress(abhaAddress);
+
+                setAbhaNumber(abhaNumber);
+                
+                setShowModal((prev:any)=>({
+                  ...prev,
+                  abhacard:true
+                }));
+
+                return;
+            }
+
+            // ABHA Alredy Exists && NOT Linked With HMIS - Countine for Linking 
+            if(normalizedMessage === "this account already exist" && existingResponse && !existingResponse?.success){
+
+                setAbhaParsedData(parsed);
+
+                setShowModal((prev:any)=>({
+                  ...prev,
+                  abhalink:true
+                }));
+
+                return;
+            }
+
+          }
+          catch(err:any){
+            toast.error("ABHA existence check failed");
+            return;
+          }  
+        }
+
         setStep("DONE");
+
         onComplete?.(parsed,txnId,mobile,aadhar);
       } 
       else{
@@ -238,8 +314,57 @@ const AadharSection = ({ onComplete }: Props) => {
 
     return () => clearInterval(interval);
   }, [timer, step]);
+ 
+
+  // ABHA already exists. Continue linking with HMIS.
+  const handleAbhaLinkConfirmation = () => {
+
+    setShowModal((prev:any)=>({
+        ...prev,
+        abhalink: false
+    }));
+
+    console.log('abha link redirecting',abhaParsedData);
+     
+    navigate("/linkabhaverification",{
+      state:{
+        parsedData:abhaParsedData,
+        typeData:mobile,
+        txnId,
+        type:"mobile"
+      }
+    });
+
+  }
+
+
+  // Abha Card Confirmation 
+  const handleAbhaCardConfirmation = (status:string) => {
+    
+    // Show Abha Card 
+    if(status == "Yes"){
+        navigate("/getabhacard", {
+            state: {
+              abhaNumber,
+              transactionId: txnId
+            }
+        });
+    }
+
+    if(status == "No"){
+
+    }
+
+    setShowModal((prev: any) => ({
+        ...prev,
+        abhacard: false
+    }));
+
+  }
+
 
   return (
+    <>
     <div className="bg-white rounded-md p-3">
 
       <div className="space-y-5">
@@ -361,7 +486,13 @@ const AadharSection = ({ onComplete }: Props) => {
                 </div>
                 <input
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) =>
+                    setMobile(
+                      e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 10)
+                    )
+                  }
                   placeholder="Enter mobile number"
                   className="w-full border rounded-r-md px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none"
                   maxLength={10}
@@ -385,6 +516,33 @@ const AadharSection = ({ onComplete }: Props) => {
 
       </div>
     </div>
+
+    
+     <ConfirmationModal
+        isOpen={showModal.abhalink}
+        title="Success"
+        message="ABHA already exists. Continue linking with HMIS?"
+        onConfirm={() => {
+          handleAbhaLinkConfirmation();         
+        }}
+        confirmText="OK"
+      />
+
+      <ConfirmationModal
+        isOpen={showModal.abhacard}
+        title="ABHA Card"
+        message="ABHA already exists & linked with HMIS. Do you want to view ABHA card?"
+        onConfirm={() => {
+          handleAbhaCardConfirmation("Yes");
+        }}
+        onCancel={() => {
+          handleAbhaCardConfirmation("No");
+        }}
+        confirmText="Yes"
+        cancelText="No"
+      />
+
+    </>
   );
 };
 

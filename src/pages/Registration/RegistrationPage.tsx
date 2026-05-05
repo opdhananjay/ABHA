@@ -1,5 +1,4 @@
 import Registration from "../../components/Registration";
-import GetPatinetDetails from "../../components/GetPatientDetails";
 
 const RegistrationPage = () => {
 
