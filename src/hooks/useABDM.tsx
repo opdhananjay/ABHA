@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { LoaderContext } from "../context/LoaderProvider";
-import { CreateCutomAbhaIDService, GenerateAbhaCardService, GetPatientByMrnoService, GetPatinetService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SavePatientService, SearchByAbhaAddressService, SendPhoneOTPService, ValidateAadharOTPService, ValidateAbhaByOTPPhoneService, ValidateAbhaByPhoneService, ValidateAbhaIDByAadharOTPService, ValidateAbhaIDByAadharService, ValidatePhoneOTPService } from "../services/abdm.service";
+import { CheckAbhaExistService, CreateCutomAbhaIDService, GenerateAbhaCardService, GetPatientByMrnoService, GetPatinetService, GetSuggestedAbhaService, RegisterByAadharService, ResendAadharOTPService, SavePatientService, SearchByAbhaAddressService, SendPhoneOTPService, UpdateAbhaDetailsService, ValidateAadharOTPService, ValidateAbhaByOTPPhoneService, ValidateAbhaByPhoneService, ValidateAbhaIDByAadharOTPService, ValidateAbhaIDByAadharService, ValidatePhoneOTPService } from "../services/abdm.service";
 
 const useABDM = () => {
 
@@ -37,47 +37,47 @@ const useABDM = () => {
       setLoading(true);
       setError(null);
 
-    // const res = await ValidateAadharOTPService(data);
-    // return res.data;
+      const res = await ValidateAadharOTPService(data);
+      return res.data;
 
-    return {
-      success: true,
-      data: JSON.stringify({
-        success: true,
-        abhaNumber:
-          "91-4819-7073-1234",
-        abhaAddress:
-          "username@sbx",
+    // return {
+    //   success: true,
+    //   data: JSON.stringify({
+    //     success: true,
+    //     abhaNumber:
+    //       "91-4819-7073-1234",
+    //     abhaAddress:
+    //       "username@sbx",
 
-        profile: {
-          firstName: "John",
-          middleName: "",
-          lastName: "Doe",
+    //     profile: {
+    //       firstName: "John",
+    //       middleName: "",
+    //       lastName: "Doe",
 
-          dateOfBirth:
-            "1990-08-15",
+    //       dateOfBirth:
+    //         "1990-08-15",
 
-          gender: "M",
+    //       gender: "M",
 
-          mobile:
-            "9876543210",
+    //       mobile:
+    //         "9876543210",
 
-          address: {
-            line:
-              "123 Main Street",
-            district:
-              "Central",
-            state:
-              "Delhi",
-            pincode:
-              "110001",
-          },
-        },
+    //       address: {
+    //         line:
+    //           "123 Main Street",
+    //         district:
+    //           "Central",
+    //         state:
+    //           "Delhi",
+    //         pincode:
+    //           "110001",
+    //       },
+    //     },
 
-        message:"This account already exist"
-          //"OTP verified successfully",
-      }),
-    }
+    //     message:"This account already exist"
+    //       //"OTP verified successfully",
+    //   }),
+    //   }
 
     } catch (err: any) {
       setError(err?.response?.data?.message || "Invalid OTP");
@@ -323,6 +323,25 @@ const useABDM = () => {
   }
 
 
+  const UpdateAbhaDetails = async (data:any) => {
+    try{
+      setLoading(true);
+      setError(null);
+
+      const res = await UpdateAbhaDetailsService(data);
+      return res.data;
+    }
+    catch(err:any){
+      setError(err?.response?.data?.message || "Failed to save patient");
+      return null;
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+
+
   // UHID Linking Ends 
 
 
@@ -366,17 +385,17 @@ const useABDM = () => {
   };
 
 
-  const checkAbhaExistHMIS = (data:any) => {
+  const checkAbhaExistHMIS = async (data:any) => {
     try{
       setLoading(true);
       setError(null);
 
-      // const res = await CheckAbhaExistService(data);
-      // return res.data;
+      const res = await CheckAbhaExistService(data);
+      return res.data;
 
-      return {
-        success:false
-      }
+      // return {
+      //   success:false
+      // }
 
     }
     catch(err:any){
@@ -412,6 +431,7 @@ const useABDM = () => {
 
     getPatinetByMrno,
     savePatient,
+    UpdateAbhaDetails,
 
     generateAbhaCard,
 

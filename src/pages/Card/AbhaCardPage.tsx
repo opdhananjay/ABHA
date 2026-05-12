@@ -9,7 +9,7 @@ const AbhaCardPage = () => {
 
   console.log('abha card page landed',abhaNumber,transactionId);
 
-  return <AbhaCard abhaNumber={"91-1787-3068-2840"} transactionId={"4e62807e-45bd-4018-8960-aeb5f6ec3340"} />;
+  return <AbhaCard abhaNumber={abhaNumber || "91-3241-1134-1735"} transactionId={transactionId || "f65f194a-20ca-4550-b18c-3addc9dc97c7"} />;
   
 };
 

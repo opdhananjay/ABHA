@@ -7,6 +7,7 @@ import {
 
 import ValidateAbhaSection from "./GetDetail/ValidateAbhaSection";
 import ValidateMobileSection from "./GetDetail/ValidateMobileSection";
+import toast from "react-hot-toast";
 
 type Mode = "mobile" | "abha";
 
@@ -16,7 +17,7 @@ const GetPatientDetails = () => {
 
   const [selectedMode, setSelectedMode] = useState<Mode>("mobile");
 
-  const handleOnComplete = (parsed:string, typeData:string, txnId:string, type:string) => {
+  const handleOnComplete = (parsed:any, typeData:string, txnId:string, type:string) => {
       
     if(type == "mobile"){
 
@@ -28,9 +29,16 @@ const GetPatientDetails = () => {
 
     // Take Abha Number from Parsed Data & Pass it 
 
+    const abhaNo = parsed.abhaNumber || "";
+
+    if(!abhaNo || !txnId){
+        toast.error('abha not found');
+        return;
+    }
+
     navigate('/getabhacard',{
       state:{
-        abhaNumber:'1233',
+        abhaNumber:parsed.abhaNumber,
         transactionId:txnId
       }
     });

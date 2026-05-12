@@ -11,6 +11,8 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
 
   const { sendOTPByPhone, verifyPhoneOTP, error } = useABDM();
 
+  const [OTP_RESEND_LIMIT] = useState(import.meta.env.VITE_OTP_RESEND_LIMIT);
+
   const [txnId, setTxnId] = useState("");
 
   const [step, setStep] = useState<"INPUT" | "OTP" | "DONE">("INPUT");
@@ -20,6 +22,8 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
 
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
+  
+  const [resendCount, setResendCount] = useState(0);
 
   // 🔥 Mask mobile
   const maskedMobile = mobile
@@ -83,6 +87,7 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
         setStep("OTP");
         setOtp(Array(6).fill(""));
         setTimer(60);
+        setResendCount(0);
         setCanResend(false);
 
         toast.success(parsed.message || "OTP sent successfully");
@@ -145,6 +150,13 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
   // 🔥 Resend
   const handleResendOTP = () => {
     if (!canResend) return;
+
+    if(resendCount >= OTP_RESEND_LIMIT){
+      toast.error("Maximum resent limit reached");
+      return;
+    }
+
+    setResendCount(prev => prev + 1);
     handleSendOtp();
   };
 
@@ -230,18 +242,29 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
           </div>
 
           {/* Resend */}
-          <div className="text-sm text-gray-500">
-            {!canResend ? (
-              <span>Resend OTP in {timer}s</span>
-            ) : (
-              <button
-                onClick={handleResendOTP}
-                className="text-blue-600 hover:underline cursor-pointer"
-              >
-                Resend OTP
-              </button>
-            )}
-          </div>
+          <div className="text-sm text-gray-500 flex justify-between items-center">
+
+              {!canResend ? (
+                <span>Resend OTP in {timer}s</span>
+              ) : (
+                <button
+                  onClick={handleResendOTP}
+                  disabled={resendCount >= OTP_RESEND_LIMIT}
+                  className={`${
+                    resendCount >= OTP_RESEND_LIMIT
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-blue-600 hover:underline"
+                  }`}
+                >
+                  {resendCount >= OTP_RESEND_LIMIT ? "Limit Reached" : "Resend OTP"}
+                </button>
+              )}
+
+              <span className="text-xs text-gray-400">
+                {OTP_RESEND_LIMIT - resendCount} attempts left
+              </span>
+
+            </div>
 
           <button
             disabled={otp.join("").length !== 6}

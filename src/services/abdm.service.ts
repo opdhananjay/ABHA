@@ -82,9 +82,19 @@ export const SavePatientService = (data:any) => {
     return apiClient.post('/ABDM/save-patient',data);
 }
 
+export const UpdateAbhaDetailsService = (data:any) => {
+    return apiClient.post('/ABDM/UpdateAbhaDetails',data);
+}
+
 
 // Get Card 
 
 export const GenerateAbhaCardService = (data:any) => {
     return apiClient.post('/ABDM/GetAbhaCard', data);
+}
+
+
+// Check Abha Exist in system
+export const CheckAbhaExistService = (data:any) => {
+    return apiClient.post('/ABDM/CheckAbhaExistInSystem',data);
 }

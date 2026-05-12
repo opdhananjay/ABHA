@@ -16,6 +16,8 @@ type Props = {
 
 const AadharSection = ({ onComplete }: Props) => {
 
+  const [OTP_RESEND_LIMIT] = useState(import.meta.env.VITE_OTP_RESEND_LIMIT)
+
   const navigate = useNavigate();
 
   const { sendAadharOtp, verifyAadharOtp, resendAadharOtp, checkAbhaExistHMIS, error } = useABDM();
@@ -47,6 +49,8 @@ const AadharSection = ({ onComplete }: Props) => {
   const [abhaNumber,setAbhaNumber] = useState("");
 
   const [abhaParsedData,setAbhaParsedData] = useState<any>({});
+  
+  const [resendCount, setResendCount] = useState(0);
 
   // Aadhaar format
   const formatAadhar = (value: string) => {
@@ -171,9 +175,11 @@ const AadharSection = ({ onComplete }: Props) => {
           }  
         }
 
+        onComplete?.(parsed,txnId,mobile,aadhar);
+
         setStep("DONE");
 
-        onComplete?.(parsed,txnId,mobile,aadhar);
+        console.log('on complete called');
       } 
       else{
         toast.error(parsed.message || "OTP verification failed. Please try again.");
@@ -192,8 +198,8 @@ const AadharSection = ({ onComplete }: Props) => {
         aadharNumber: aadhar.replace(/\s/g, "")
       };
 
-      setStep("OTP");
-      setOtpAadhar(Array(6).fill(""));
+    //  setStep("OTP");
+    //  setOtpAadhar(Array(6).fill(""));
 
       const response = await sendAadharOtp(dataToSend);
 
@@ -223,6 +229,8 @@ const AadharSection = ({ onComplete }: Props) => {
           setTimer(60);
 
           setCanResend(false);
+          
+          setResendCount(0);
 
           toast.success("OTP sent successfully to your registered mobile number.");
         }
@@ -244,6 +252,11 @@ const AadharSection = ({ onComplete }: Props) => {
       return false;
     }
 
+    if(resendCount >= OTP_RESEND_LIMIT){
+      toast.error('Maximum resend limit reached');
+      return false;
+    }
+
     if(txnId === "") {
       toast.error("No transaction found. Please initiate OTP request again.");
       return false;
@@ -259,6 +272,7 @@ const AadharSection = ({ onComplete }: Props) => {
     if(!validateResend()) return;
 
     setOtpAadhar(Array(6).fill(""));
+    setResendCount(prev => prev + 1);
 
     const dataToSend = {
       txnId: txnId,
@@ -284,6 +298,8 @@ const AadharSection = ({ onComplete }: Props) => {
         setTimer(60);
 
         setCanResend(false);
+
+        //setResendCount(0);
 
         toast.success("OTP resent successfully to your registered mobile number.");
       }
@@ -457,7 +473,7 @@ const AadharSection = ({ onComplete }: Props) => {
             </div>
 
             {/* Resend OTP */}
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 flex justify-between items-center">
 
                 {!canResend ? (
                   <span>Resend OTP in {timer}s</span>
@@ -466,11 +482,20 @@ const AadharSection = ({ onComplete }: Props) => {
                     onClick={() => {
                       handleResendAadharOtp();
                     }}
-                    className="text-blue-600 cursor-pointer"
+                    disabled={resendCount >= OTP_RESEND_LIMIT}
+                    className={`${
+                      resendCount >= OTP_RESEND_LIMIT
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-blue-600 cursor-pointer"
+                    }`}
                   >
                     Resend OTP
                   </button>
                 )}
+
+                <span className="text-xs text-gray-400">
+                  {OTP_RESEND_LIMIT - resendCount} attempts left
+                </span>
 
             </div>
 

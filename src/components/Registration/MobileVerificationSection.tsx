@@ -11,6 +11,8 @@ type Props = {
 
 const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }: Props) => {
 
+  const [OTP_RESEND_LIMIT] = useState(import.meta.env.VITE_OTP_RESEND_LIMIT);
+
   const { sendPhoneOtp, verifyPhoneOtp, error } = useABDM();
 
   const [txnId, setTxnId] = useState(transactionId || ""); // Store transaction ID for OTP verification and resending
@@ -26,6 +28,8 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
 
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
+
+  const [resendCount, setResendCount] = useState(0);
 
   // 🔹 Mask function
   const maskMobile = (num?: string) => {
@@ -65,8 +69,8 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
       mobile:mobile
     }
 
-    setStep("DONE");
-    onComplete?.();
+   // setStep("DONE");
+   // onComplete?.();
 
     const response = await verifyPhoneOtp(dataToSend);
 
@@ -100,7 +104,7 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
        phoneNumber:mobile
     }
 
-    setStep("OTP");
+    //setStep("OTP");
 
     const response = await sendPhoneOtp(dataToSend)
 
@@ -125,6 +129,8 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
           
           setCanResend(false);
 
+          setResendCount(0);
+
           setOtpMobile(Array(6).fill(""));
       }
       else{
@@ -138,6 +144,14 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
 
   // Handle Resend OTP 
   const handleResendPhoneOtp = async () => {
+     
+     if(!canResend) return;
+
+     if(resendCount >= OTP_RESEND_LIMIT){
+        toast.error("Maximum resent limit reached");
+        return;
+     }
+
      handleMobileSendOtp();
   }
 
@@ -281,19 +295,30 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
           </div>
 
           {/* Resend */}
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 flex justify-between items-center">
+
             {!canResend ? (
               <span>Resend OTP in {timer}s</span>
             ) : (
               <button
                 onClick={() => {
-                  handleResendPhoneOtp()
+                  handleResendPhoneOtp();
                 }}
-                className="text-blue-600 hover:underline"
+                disabled={resendCount >= OTP_RESEND_LIMIT}
+                    className={`${
+                      resendCount >= OTP_RESEND_LIMIT
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-blue-600 cursor-pointer"
+                    }`}
               >
-                Resend OTP
+                {resendCount >= OTP_RESEND_LIMIT ? "Limit Reached" : "Resend OTP"}
               </button>
             )}
+
+            <span className="text-xs text-gray-400">
+              {OTP_RESEND_LIMIT - resendCount} attempts left
+            </span>
+
           </div>
 
           {/* Verify */}

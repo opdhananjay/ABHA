@@ -5,6 +5,9 @@ const apiClient = axios.create({
     headers:{
         'Content-Type':'application/json'
     },
+    validateStatus:function(state){
+        return state < 500
+    }
 });
 
 export default apiClient;
