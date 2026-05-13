@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, UserPlus, Link2 } from "lucide-react";
+import PatientVerificationModal from "../Modal/PatientVerificationModal";
 import useABDM from "../../hooks/useABDM";
 import toast from "react-hot-toast";
 import { formatDOB, calculateAge } from "../../utils/patientHelpers";
@@ -31,11 +32,18 @@ const UhIdLink = ({
   const [results, setResults] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
 
   const patientName = `${profile?.firstName || ""} ${
     profile?.lastName || ""
   }`.trim();
+console.log("PROFILE", profile);
 
+console.log("ABHA NUMBER", abhaNumber);
+
+console.log("ABHA ADDRESS", abhaAddress);
   // ================= SEARCH PATIENT =================
   useEffect(() => {
     if (search.length < 3) {
@@ -195,6 +203,35 @@ const UhIdLink = ({
   };
 
   // ================= LINK EXISTING =================
+  const handleOpenExistingModal = async () => {
+
+  if (!selected) {
+    toast.error("Please select patient");
+    return;
+  }
+
+  try {
+
+    const response = await getPatinetByMrno(selected);
+
+    if (!response || !response.success) {
+      toast.error("Failed to fetch patient details");
+      return;
+    }
+
+    setSelectedPatientData(response.data);
+
+    setIsModalOpen(true);
+
+  } catch (err) {
+
+    console.error(err);
+
+    toast.error("Failed to fetch patient");
+
+  }
+};
+
   const handleLinkUHID = async () => {
     if (!validateCommon()) return;
 
@@ -291,7 +328,7 @@ const UhIdLink = ({
               <span className="font-medium">Patient:</span> {patientName}
             </p>
 
-            <p className="text-xs text-gray-500">ABHA: {abhaAddress}</p>
+            <p className="text-xs text-gray-500">ABHA: {profile?.phrAddress?.join(", ") || abhaAddress}</p>
           </div>
 
           <div className="text-sm text-gray-600 flex items-center gap-2">
@@ -299,7 +336,7 @@ const UhIdLink = ({
           </div>
 
           <button
-            onClick={handleCreateNewUHID}
+         onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
           >
             Create UHID & Continue
@@ -315,7 +352,7 @@ const UhIdLink = ({
               <span className="font-medium">Patient:</span> {patientName}
             </p>
 
-            <p className="text-xs text-gray-500">ABHA: {abhaAddress}</p>
+            <p className="text-xs text-gray-500">ABHA: {profile?.phrAddress?.join(", ") || abhaAddress}</p>
           </div>
 
           {/* Search */}
@@ -373,7 +410,7 @@ const UhIdLink = ({
 
           <button
             disabled={!selected}
-            onClick={handleLinkUHID}
+          onClick={handleOpenExistingModal}
             className="px-4 py-2 bg-green-600 text-white text-sm rounded-md disabled:opacity-50 flex items-center gap-2"
           >
             <Link2 size={14} />
@@ -381,6 +418,36 @@ const UhIdLink = ({
           </button>
         </div>
       )}
+
+ <PatientVerificationModal
+  isOpen={isModalOpen}
+  abhaProfile={{
+    ...profile,
+    abhaNumber,
+
+    abhaAddress:
+      profile?.phrAddress?.join(", ") ||
+      abhaAddress,
+  }}
+  
+  patientData={selectedPatientData}
+  isNewPatient={mode === "NEW"}
+  onCancel={() => setIsModalOpen(false)}
+  onContinue={async () => {
+
+    setIsModalOpen(false);
+
+    if (mode === "NEW") {
+
+      await handleCreateNewUHID();
+
+    } else {
+
+      await handleLinkUHID();
+
+    }
+  }}
+/>
     </div>
   );
 };

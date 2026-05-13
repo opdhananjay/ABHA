@@ -29,3 +29,4 @@ export const GetCitiesService = () => {
 export const GetAreasService = () => {
   return apiClient.get("/master/area");
 };
+

@@ -141,7 +141,7 @@ const AadharSection = ({ onComplete }: Props) => {
             const existingResponse = await checkAbhaExistHMIS(dataToExistingRes);
             
             // ABHA Alredy Exists && Alredy Link With HMIS - Show Abha Card 
-            if(normalizedMessage === "this account already exist" && existingResponse && existingResponse?.success){
+            if(normalizedMessage === "this account already exis" && existingResponse && existingResponse?.success){
                 
                 setAbhaAddress(abhaAddress);
 
@@ -156,7 +156,7 @@ const AadharSection = ({ onComplete }: Props) => {
             }
 
             // ABHA Alredy Exists && NOT Linked With HMIS - Countine for Linking 
-            if(normalizedMessage === "this account already exist" && existingResponse && !existingResponse?.success){
+            if(normalizedMessage === "this account already exis" && existingResponse && !existingResponse?.success){
 
                 setAbhaParsedData(parsed);
 

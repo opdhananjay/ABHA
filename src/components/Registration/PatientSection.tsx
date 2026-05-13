@@ -20,8 +20,12 @@ const PatinetSection = ({
   const patientProfile =
     profile?.profile || {};
 
-  const patientAddress =
-    patientProfile?.address || {};
+const patientAddress = {
+  fullAddress: patientProfile?.address || "",
+  stateName: patientProfile?.stateName || "",
+  districtName: patientProfile?.districtName || "",
+  pinCode: patientProfile?.pinCode || "",
+};
 
   const {
     salutations,
@@ -91,19 +95,23 @@ const PatinetSection = ({
       const matchedState =
         states.find(
           (item: any) =>
-            item.text?.toLowerCase().trim() ===
-            patientAddress?.state
-              ?.toLowerCase()
-              ?.trim()
+          item.text
+  ?.toLowerCase()
+  ?.replace(/\s/g, "") ===
+patientAddress?.stateName
+  ?.toLowerCase()
+  ?.replace(/\s/g, "")
         );
 
       const matchedDistrict =
         districts.find(
           (item: any) =>
-            item.text?.toLowerCase().trim() ===
-            patientAddress?.district
-              ?.toLowerCase()
-              ?.trim()
+          item.text
+  ?.toLowerCase()
+  ?.replace(/\s/g, "") ===
+patientAddress?.districtName
+  ?.toLowerCase()
+  ?.replace(/\s/g, "")
         );
 
       const matchedCountry =
@@ -194,11 +202,37 @@ const PatinetSection = ({
   return (
     <div className="bg-white border-gray-200">
 
-      <div className="text-xs text-gray-500 py-2 mb-2">
-        Patient details are fetched from Aadhaar.
-      </div>
+<div className="flex items-center justify-between mb-6">
+
+  {/* LEFT SIDE */}
+  <div>
+    <h2 className="text-lg font-semibold text-gray-800">
+      Patient Details
+    </h2>
+
+    <div className="text-sm text-gray-500 mt-1">
+      Patient details are fetched from Aadhaar.
+    </div>
+  </div>
+
+  {/* RIGHT SIDE IMAGE */}
+  {patientProfile?.photo && (
+    <div className="flex-shrink-0">
+
+      <img
+        src={`data:image/jpeg;base64,${patientProfile.photo}`}
+        alt="Profile"
+        className="w-20 h-20 rounded-full border-2 border-gray-300 object-cover"
+      />
+
+    </div>
+  )}
+
+</div>
 
       <form className="space-y-4">
+        
+
 
         {/* SALUTATION */}
         <DropdownField
@@ -217,6 +251,7 @@ const PatinetSection = ({
             })
           }
         />
+
 
         {/* NAME */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -241,13 +276,12 @@ const PatinetSection = ({
             }
           />
 
-          <InputField
-            label="DOB"
-            value={
-              patientProfile?.dateOfBirth
-            }
-          />
-
+        <InputField
+  label="DOB"
+  value={
+    patientProfile?.dob
+  }
+/>
           <InputField
             label="Mobile"
             value={
@@ -261,13 +295,14 @@ const PatinetSection = ({
               profile?.abhaNumber
             }
           />
-
-          <InputField
-            label="ABHA Address"
-            value={
-              profile?.abhaAddress
-            }
-          />
+<InputField
+  label="ABHA Address"
+  value={
+    patientProfile?.phrAddress?.join(", ") ||
+    profile?.phrAddress?.join(", ") ||
+    profile?.abhaAddress
+  }
+/>
 
           <InputField
             label="Gender"
@@ -333,7 +368,7 @@ const PatinetSection = ({
 
           <textarea
             readOnly
-            value={`${patientAddress?.line || ""}, ${patientAddress?.district || ""}, ${patientAddress?.state || ""}`}
+   value={patientAddress?.fullAddress}
             className="flex-1 border rounded-md px-3 py-2 bg-gray-100"
           />
         </div>
@@ -395,12 +430,24 @@ const PatinetSection = ({
           />
         </div>
 
-        <InputField
-          label="Pincode"
-          value={
-            patientAddress?.pincode
-          }
-        />
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+  <InputField
+    label="Pincode"
+    value={
+      patientAddress?.pinCode
+    }
+  />
+
+  <InputField
+    label="ABHA Status"
+    value={
+      patientProfile?.abhaStatus ||
+      profile?.abhaStatus
+    }
+  />
+
+</div>
 
         <button
           type="button"
