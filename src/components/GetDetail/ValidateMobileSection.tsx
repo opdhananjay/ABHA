@@ -48,15 +48,52 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
 
   // 🔥 OTP change
   const handleOtpChange = (val: string, index: number) => {
+
     if (!/^\d?$/.test(val)) return;
 
     const newOtp = [...otp];
+
     newOtp[index] = val;
+
     setOtp(newOtp);
 
-    if (val && index < 5) {
-      const next = document.getElementById(`otp-${index + 1}`);
-      next?.focus();
+    // Move forward
+    if (val && index < otp.length - 1) {
+
+      const next = document.getElementById(
+        `otp-${index + 1}`
+      );
+
+      if (next) {
+        (next as HTMLInputElement).focus();
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+
+    // Only backspace
+    if (e.key !== "Backspace") return;
+
+    if (otp[index] === "" && index > 0) {
+
+      const newOtp = [...otp];
+
+      // Previous value clear
+      newOtp[index - 1] = "";
+
+      setOtp(newOtp);
+
+      const prev = document.getElementById(
+        `otp-${index - 1}`
+      );
+
+      if (prev) {
+        (prev as HTMLInputElement).focus();
+      }
     }
   };
 
@@ -233,6 +270,9 @@ const ValidateMobileSection = ({ onComplete }: Props) => {
                   value={digit}
                   onChange={(e) =>
                     handleOtpChange(e.target.value, i)
+                  }
+                  onKeyDown={(e) =>
+                    handleOtpKeyDown(e, i)
                   }
                   maxLength={1}
                   className="w-10 h-10 text-center border rounded-md focus:ring-2 focus:ring-blue-600"

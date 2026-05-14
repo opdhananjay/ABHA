@@ -39,14 +39,52 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
 
   // 🔹 OTP input
   const handleOtpChange = (value: string, index: number) => {
+
     if (!/^\d?$/.test(value)) return;
 
     const newOtp = [...otpMobile];
+
     newOtp[index] = value;
+
     setOtpMobile(newOtp);
 
-    const next = document.getElementById(`mobile-otp-${index + 1}`);
-    if (value && next) (next as HTMLInputElement).focus();
+    // Move to next input
+    if (value && index < otpMobile.length - 1) {
+
+      const next = document.getElementById(
+        `mobile-otp-${index + 1}`
+      );
+
+      if (next) {
+        (next as HTMLInputElement).focus();
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+
+    // Only backspace
+    if (e.key !== "Backspace") return;
+
+    if (otpMobile[index] === "" && index > 0) {
+
+      const newOtp = [...otpMobile];
+
+      newOtp[index - 1] = "";
+
+      setOtpMobile(newOtp);
+
+      const prev = document.getElementById(
+        `mobile-otp-${index - 1}`
+      );
+
+      if (prev) {
+        (prev as HTMLInputElement).focus();
+      }
+    }
   };
 
   // 🔹 Mobile validation
@@ -287,6 +325,7 @@ const MobileVerificationSection = ({ transactionId, aadhaarMobile, onComplete }:
                   id={`mobile-otp-${i}`}
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, i)}
                   maxLength={1}
                   className="w-10 h-10 text-center border rounded-md focus:ring-2 focus:ring-blue-600"
                 />

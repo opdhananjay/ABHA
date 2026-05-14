@@ -64,14 +64,52 @@ const AadharSection = ({ onComplete }: Props) => {
 
   // OTP handler (cleaned: only aadhaar now)
   const handleOtpChange = (value: string, index: number) => {
+
     if (!/^\d?$/.test(value)) return;
 
     const newOtp = [...otpAadhar];
+
     newOtp[index] = value;
+
     setOtpAadhar(newOtp);
 
-    const next = document.getElementById(`aadhaar-otp-${index + 1}`);
-    if (value && next) (next as HTMLInputElement).focus();
+    // Forward focus
+    if (value && index < otpAadhar.length - 1) {
+
+      const next = document.getElementById(
+        `aadhaar-otp-${index + 1}`
+      );
+
+      if (next) {
+        (next as HTMLInputElement).focus();
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+
+    // Only for backspace
+    if (e.key !== "Backspace") return;
+
+    if (otpAadhar[index] === "" && index > 0) {
+
+      const newOtp = [...otpAadhar];
+
+      newOtp[index - 1] = "";
+
+      setOtpAadhar(newOtp);
+
+      const prev = document.getElementById(
+        `aadhaar-otp-${index - 1}`
+      );
+
+      if (prev) {
+        (prev as HTMLInputElement).focus();
+      }
+    }
   };
 
 
@@ -465,6 +503,7 @@ const AadharSection = ({ onComplete }: Props) => {
                     onChange={(e) =>
                       handleOtpChange(e.target.value, i)
                     }
+                    onKeyDown={(e) => handleOtpKeyDown(e, i)}
                     maxLength={1}
                     className="w-10 h-10 text-center border rounded-md focus:ring-2 focus:ring-blue-600"
                   />

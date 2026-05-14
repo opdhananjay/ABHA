@@ -211,7 +211,7 @@ console.log("ABHA ADDRESS", abhaAddress);
   }
 
   try {
-
+    
     const response = await getPatinetByMrno(selected);
 
     if (!response || !response.success) {
@@ -325,7 +325,7 @@ console.log("ABHA ADDRESS", abhaAddress);
         <div className="space-y-3">
           <div className="bg-gray-50 border rounded-md p-3 text-sm space-y-1">
             <p>
-              <span className="font-medium">Patient:</span> {patientName}
+              <span className="font-medium">Patient Name:</span> {patientName}
             </p>
 
             <p className="text-xs text-gray-500">ABHA: {profile?.phrAddress?.join(", ") || abhaAddress}</p>
@@ -349,7 +349,7 @@ console.log("ABHA ADDRESS", abhaAddress);
         <div className="space-y-4">
           <div className="bg-gray-50 border rounded-md p-3 text-sm space-y-1">
             <p>
-              <span className="font-medium">Patient:</span> {patientName}
+              <span className="font-medium">Patient Name:</span> {patientName}
             </p>
 
             <p className="text-xs text-gray-500">ABHA: {profile?.phrAddress?.join(", ") || abhaAddress}</p>

@@ -59,6 +59,15 @@ const AbhaSection = ({ transactionId, onComplete }: Props) => {
       return;
     }
 
+    const abhaRegex = /^(?=.{8,18}$)(?![._])(?!.*[._]{2})[a-zA-Z0-9._]+(?<![._])$/;
+
+    if (!abhaRegex.test(finalAddress)) {
+      toast.error(
+          "ABHA Address must be 8-18 characters and valid format"
+      );
+      return;
+    }
+    
     const response = await createCustomAbhaId({
       txnId,
       abhaAddress: finalAddress,

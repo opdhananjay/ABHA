@@ -26,7 +26,7 @@ const Registration = () => {
     aadhar: "active",
     mobile: "pending",
     patient: "active",
-    abha: "pending",  
+    abha: "active",  
     uhid: "active",
   });
 
@@ -36,7 +36,7 @@ const Registration = () => {
     abhaAddress: "",
   });
 
-  const [aadhaarMobile, setAadhaarMobile] = useState("");
+  const [aadhaarMobile, setAadhaarMobile] = useState(""); 
 
   // 🔒 Lock logic
   // const isAccessible = (key: keyof typeof status) => {
